@@ -1,0 +1,85 @@
+// 智能激励语库与特征定义
+// 神经网络根据用户状态特征预测最适合的激励语类别
+
+// ============ 激励语类别 ============
+export const QUOTE_CATEGORIES = [
+  'morning',    // 0 - 早安活力
+  'praise',     // 1 - 肯定成就
+  'encourage',  // 2 - 鼓励坚持
+  'gentle',     // 3 - 温柔提醒
+  'rest',       // 4 - 休息关怀
+  'persist',    // 5 - 持续动力
+] as const;
+
+export type QuoteCategory = typeof QUOTE_CATEGORIES[number];
+
+// ============ 激励语库（每类多条） ============
+export const QUOTES: Record<QuoteCategory, string[]> = {
+  morning: [
+    '清晨的第一缕阳光，属于早起坚持的你。',
+    '新的一天，新的可能，从一个小习惯开始。',
+    '早安，今天的你比昨天更接近目标。',
+    '晨光熹微，万物可期，你已准备好出发。',
+    '每一个清晨都是重新开始的机会。',
+  ],
+  praise: [
+    '太棒了！今天的坚持值得为自己鼓掌。',
+    '你做到了，这就是自律的力量。',
+    '连续的坚持正在塑造一个更好的你。',
+    '完成度满分，这份成就感属于你。',
+    '你的每一步坚持，都在积攒成未来的光芒。',
+  ],
+  encourage: [
+    '开始就是最大的进步，慢慢来没关系。',
+    '哪怕今天只做了一点点，也是向前。',
+    '习惯需要时间培养，对自己温柔一点。',
+    '别着急，每个强大的习惯都从第一步开始。',
+    '今天的你，只要比昨天多努力一分就够了。',
+  ],
+  gentle: [
+    '还有些习惯没完成，不急，先深呼吸。',
+    '下午的时光还长，调整节奏继续就好。',
+    '没完成也没关系，重要的是你没放弃。',
+    '给自己一点宽容，明天继续就好。',
+    '坚持不完美也值得肯定，你已经很努力了。',
+  ],
+  rest: [
+    '夜深了，今天辛苦了，好好休息吧。',
+    '休息也是自律的一部分，别太苛责自己。',
+    '晚安，愿你明天醒来依然充满力量。',
+    '让身心放松下来，好的睡眠是最好的充电。',
+    '今天的努力已经足够，是时候放下一切休息了。',
+  ],
+  persist: [
+    '保持这个节奏，你正在进入正轨。',
+    '稳定的坚持比偶尔的爆发更有力量。',
+    '你已经坚持了这么多天，继续下去就会不同。',
+    '自律不是冲刺，而是一场温柔的马拉松。',
+    '坚持下去，时间会给你最好的答案。',
+  ],
+};
+
+// ============ 用户状态特征 ============
+export interface UserFeatures {
+  hour: number;            // 0-23 当前小时
+  streak: number;          // 总连续打卡天数
+  completionRate: number;  // 0-1 今日完成率
+  consistency: number;     // 0-1 过去7天平均完成率
+}
+
+/** 将用户状态归一化为神经网络输入特征向量（4维） */
+export function extractFeatures(f: UserFeatures): number[] {
+  return [
+    f.hour / 24,                        // 时段归一化
+    Math.min(f.streak / 30, 1),         // 连续天数归一化（30天封顶）
+    Math.max(0, Math.min(f.completionRate, 1)), // 完成率
+    Math.max(0, Math.min(f.consistency, 1)),    // 一致性
+  ];
+}
+
+/** one-hot 编码 */
+export function oneHot(idx: number, size: number): number[] {
+  const v = new Array(size).fill(0);
+  v[idx] = 1;
+  return v;
+}
