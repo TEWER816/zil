@@ -2,10 +2,12 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, RotateCcw, Sparkles, Maximize2, Minimize2, Palette, Target } from 'lucide-react';
 import { useFocusStore } from '@/store/focusStore';
+import { useHabitStore } from '@/store/habitStore';
 import { useUIStore } from '@/store/uiStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { ProgressRing } from '@/components/common/ProgressRing';
-import { recommendFocusDuration } from '@/lib/focusRecommender';
+import { recommendFocusDuration, recordFocusChoice } from '@/lib/focusRecommender';
+import { buildUserContext } from '@/lib/intelligence';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 
@@ -29,6 +31,8 @@ export function Focus() {
     getTodayPomodoros,
     sessions
   } = useFocusStore();
+
+  const { habits, logs } = useHabitStore();
 
   const [showSettings, setShowSettings] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -94,10 +98,14 @@ export function Focus() {
     return () => document.removeEventListener('fullscreenchange', handleFsChange);
   }, [focusMode, exitFocusMode]);
 
-  // 神经网络智能推荐专注时长
+  // 统一智能引擎：构建用户上下文 + 神经网络推荐专注时长
+  const ctx = useMemo(
+    () => buildUserContext(habits, logs, sessions),
+    [habits, logs, sessions]
+  );
   const focusRec = useMemo(
-    () => recommendFocusDuration(new Date().getHours(), todayPomodoros, sessions),
-    [todayPomodoros, sessions]
+    () => recommendFocusDuration(ctx),
+    [ctx]
   );
 
   // 计时器
@@ -145,6 +153,10 @@ export function Focus() {
 
   // 确认开始专注
   const handleConfirmStart = () => {
+    // 记录用户专注时长选择（用于在线学习，仅专注会话）
+    if (sessionType === 'focus') {
+      recordFocusChoice(ctx, focusDuration, focusRec.duration);
+    }
     startSession(sessionType, taskInput);
     setTaskInput('');
     setShowTaskPrompt(false);

@@ -1,136 +1,61 @@
 // 智能激励语预测器
-// 用合成的训练数据训练 MLP，根据用户当前状态预测最适合的激励语类别
-// 模型权重持久化到 localStorage，下次直接加载（无需重新训练）
-import { MLP, type MLPWeights } from './nn';
-import {
-  QUOTE_CATEGORIES,
-  QUOTES,
-  extractFeatures,
-  oneHot,
-  type UserFeatures,
-  type QuoteCategory,
-} from './quotes';
+// 基于用户上下文预测最适合的激励语类别
+// 优先使用神经网络（在线学习真实反馈），样本不足时回退到规则
+import { engine, extractSharedFeatures, type UserContext } from './intelligence';
+import { QUOTE_CATEGORIES, QUOTES, type QuoteCategory } from './quotes';
 
-const STORAGE_KEY = 'zil-nn-quotes-weights';
-const INPUT_SIZE = 4;
-const HIDDEN_SIZE = 10;
-const OUTPUT_SIZE = QUOTE_CATEGORIES.length;
-
-// ============ 合成训练数据 ============
-// 根据规则生成 (特征, 类别) 样本，让模型学习状态→类别的映射
-function generateTrainingData(): { X: number[][]; Y: number[][] } {
-  const X: number[][] = [];
-  const Y: number[][] = [];
-
-  // 生成多样化的用户状态样本
-  for (let i = 0; i < 400; i++) {
-    const hour = Math.floor(Math.random() * 24);
-    const streak = Math.floor(Math.random() * 30);
-    const completionRate = Math.random();
-    const consistency = Math.random();
-
-    const features = extractFeatures({ hour, streak, completionRate, consistency });
-
-    // 规则决定最适合的类别（带优先级）
-    let category: number;
-
-    if (hour >= 22 || hour <= 4) {
-      category = 4; // rest 休息关怀（深夜）
-    } else if (hour >= 5 && hour <= 11 && completionRate < 0.5) {
-      category = 0; // morning 早安活力
-    } else if (completionRate >= 0.8 && streak >= 5) {
-      category = 1; // praise 肯定成就
-    } else if (completionRate < 0.3 && streak < 3) {
-      category = 2; // encourage 鼓励坚持
-    } else if (completionRate < 0.7 && hour >= 18) {
-      category = 3; // gentle 温柔提醒（傍晚未完成）
-    } else if (streak >= 3 && streak <= 12 && completionRate >= 0.3 && completionRate <= 0.8) {
-      category = 5; // persist 持续动力
-    } else if (completionRate >= 0.8) {
-      category = 1; // praise
-    } else if (streak >= 10) {
-      category = 5; // persist
-    } else {
-      category = 2; // encourage 默认鼓励
-    }
-
-    X.push(features);
-    Y.push(oneHot(category, OUTPUT_SIZE));
-  }
-
-  return { X, Y };
-}
-
-// ============ 模型管理 ============
-let model: MLP | null = null;
 let lastUsedQuoteIdx: Record<string, number> = {};
 
-/** 获取或训练模型 */
-function getModel(): MLP {
-  if (model) return model;
-
-  model = new MLP({
-    inputSize: INPUT_SIZE,
-    hiddenSize: HIDDEN_SIZE,
-    outputSize: OUTPUT_SIZE,
-    learningRate: 0.08,
-  });
-
-  // 尝试加载已保存的权重
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const weights: MLPWeights = JSON.parse(saved);
-      model.setWeights(weights);
-      return model;
-    }
-  } catch {
-    // 加载失败，重新训练
-  }
-
-  // 训练新模型
-  const { X, Y } = generateTrainingData();
-  model.train(X, Y, { epochs: 150, batchSize: 8, earlyStopPatience: 15, validationSplit: 0.2 });
-
-  // 持久化权重
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(model.getWeights()));
-  } catch {
-    // 存储失败忽略
-  }
-
-  return model;
-}
-
-/** 重新训练模型（清除缓存） */
-export function retrainModel() {
-  model = null;
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch {
-    // ignore
-  }
-  lastUsedQuoteIdx = {};
-  return getModel();
+/** 规则兜底：样本不足时根据上下文规则选择类别 */
+function rulePredict(ctx: UserContext): number {
+  const { hour, completionRate, streak, consistency7d } = ctx;
+  if (hour >= 22 || hour <= 4) return 4; // rest
+  if (hour >= 5 && hour <= 11 && completionRate < 0.5) return 0; // morning
+  if (completionRate >= 0.8 && streak >= 5) return 1; // praise
+  if (completionRate < 0.3 && streak < 3) return 2; // encourage
+  if (completionRate < 0.7 && hour >= 18) return 3; // gentle
+  if (streak >= 3 && streak <= 12 && completionRate >= 0.3 && completionRate <= 0.8) return 5; // persist
+  if (completionRate >= 0.8) return 1; // praise
+  if (streak >= 10) return 5; // persist
+  if (consistency7d >= 0.7) return 5; // persist
+  return 2; // encourage
 }
 
 /**
  * 智能预测激励语
- * 根据用户当前状态，用神经网络预测最适合的类别，返回该类别下一条语录
+ * 优先用神经网络（基于真实反馈训练），无权重时用规则兜底
  */
-export function predictQuote(features: UserFeatures): { quote: string; category: QuoteCategory; confidence: number } {
-  const nn = getModel();
-  const input = extractFeatures(features);
-  const probs = nn.predict(input);
+export function predictQuote(ctx: UserContext): {
+  quote: string;
+  category: QuoteCategory;
+  categoryIdx: number;
+  confidence: number;
+  usedNN: boolean;
+} {
+  const features = extractSharedFeatures(ctx);
+  const stats = engine.getStats();
 
-  // 选概率最高的类别
-  let maxIdx = 0;
-  for (let i = 1; i < probs.length; i++) {
-    if (probs[i] > probs[maxIdx]) maxIdx = i;
+  let categoryIdx: number;
+  let confidence: number;
+  let usedNN = false;
+
+  // 已有训练权重或足够样本时用 NN
+  if (stats.quoteTrained) {
+    const model = engine.getQuoteModel();
+    const probs = model.predict(features);
+    let maxIdx = 0;
+    for (let i = 1; i < probs.length; i++) {
+      if (probs[i] > probs[maxIdx]) maxIdx = i;
+    }
+    categoryIdx = maxIdx;
+    confidence = probs[maxIdx];
+    usedNN = true;
+  } else {
+    categoryIdx = rulePredict(ctx);
+    confidence = 1;
   }
 
-  const category = QUOTE_CATEGORIES[maxIdx];
-  const confidence = probs[maxIdx];
+  const category = QUOTE_CATEGORIES[categoryIdx];
 
   // 从该类别语录库中选一条（避免连续重复）
   const pool = QUOTES[category];
@@ -146,17 +71,45 @@ export function predictQuote(features: UserFeatures): { quote: string; category:
   return {
     quote: pool[idx],
     category,
+    categoryIdx,
     confidence,
+    usedNN,
   };
 }
 
-/** 获取所有类别的概率分布（用于展示"AI 思考过程"） */
-export function predictDistribution(features: UserFeatures): { category: QuoteCategory; probability: number }[] {
-  const nn = getModel();
-  const input = extractFeatures(features);
-  const probs = nn.predict(input);
+/** 记录展示了一条某类别语录（用于在线学习） */
+export function recordQuoteShow(ctx: UserContext, categoryIdx: number) {
+  const features = extractSharedFeatures(ctx);
+  engine.logQuoteSample(features, categoryIdx);
+}
+
+/** 记录用户对语录的反馈（有用/没用） */
+export function recordQuoteFeedback(categoryIdx: number, useful: boolean) {
+  engine.logQuoteFeedback(categoryIdx, useful ? 1 : -1);
+}
+
+/** 获取各类别概率分布（用于展示 AI 思考过程） */
+export function predictDistribution(ctx: UserContext): {
+  category: QuoteCategory;
+  probability: number;
+}[] {
+  const features = extractSharedFeatures(ctx);
+  const stats = engine.getStats();
+  let probs: number[];
+  if (stats.quoteTrained) {
+    probs = engine.getQuoteModel().predict(features);
+  } else {
+    const ruleIdx = rulePredict(ctx);
+    probs = QUOTE_CATEGORIES.map((_, i) => (i === ruleIdx ? 1 : 0));
+  }
   return QUOTE_CATEGORIES.map((category, i) => ({
     category,
     probability: probs[i],
   }));
+}
+
+/** 重置模型（清空样本与权重，重新开始学习） */
+export function retrainModel() {
+  lastUsedQuoteIdx = {};
+  // 注意：清空操作由调用方通过 engine 完成
 }

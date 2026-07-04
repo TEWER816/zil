@@ -28,6 +28,7 @@ dist-ssr
 # Build outputs and distribution
 /demo
 /release
+/release2
 /build
 /output
 /zil web

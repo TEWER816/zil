@@ -1,15 +1,17 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, TrendingUp, Flame, CheckCircle2, Maximize2 } from 'lucide-react';
+import { Sparkles, TrendingUp, Flame, CheckCircle2, Maximize2, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useHabitStore, getLocalDateString } from '@/store/habitStore';
+import { useFocusStore } from '@/store/focusStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useUIStore } from '@/store/uiStore';
 import { HabitCard } from '@/components/habits/HabitCard';
 import { HabitForm } from '@/components/habits/HabitForm';
 import { ProgressRing } from '@/components/common/ProgressRing';
-import { predictQuote } from '@/lib/predictor';
+import { predictQuote, recordQuoteShow, recordQuoteFeedback } from '@/lib/predictor';
 import { rankHabits } from '@/lib/habitRanker';
+import { buildUserContext } from '@/lib/intelligence';
 
 // 获取问候语
 const getGreeting = () => {
@@ -31,9 +33,11 @@ const getSubGreeting = () => {
 
 export function Home() {
   const { habits, logs, toggleComplete, getTodayLogs, getStreakDays } = useHabitStore();
+  const sessions = useFocusStore((s) => s.sessions);
   const { userName, showMotivationalQuotes, homeProgressImage } = useSettingsStore();
   const { enterFocusMode } = useUIStore();
   const navigate = useNavigate();
+  const [feedbackKey, setFeedbackKey] = useState(0);
 
   const handleStartDiscipline = async () => {
     enterFocusMode();
@@ -60,39 +64,35 @@ export function Home() {
 
   const isAllDone = activeHabits.length > 0 && completedCount === activeHabits.length;
 
-  // 过去7天完成率（用于神经网络特征）
-  const weekRate = useMemo(() => {
-    if (activeHabits.length === 0) return 0;
-    const today = new Date();
-    let total = 0, done = 0;
-    for (let d = 0; d < 7; d++) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - d);
-      const dateStr = getLocalDateString(date);
-      for (const h of activeHabits) {
-        total++;
-        const log = logs.find(l => l.habitId === h.id && l.date === dateStr);
-        if (log?.completed) done++;
-      }
-    }
-    return total > 0 ? done / total : 0;
-  }, [activeHabits, logs]);
-
-  // 神经网络智能激励语：根据时段/连续天数/完成率/一致性预测最合适的语录
-  const aiQuote = useMemo(
-    () => predictQuote({
-      hour: new Date().getHours(),
-      streak: totalStreak,
-      completionRate: activeHabits.length > 0 ? completedCount / activeHabits.length : 0,
-      consistency: weekRate,
-    }),
-    [totalStreak, completedCount, activeHabits.length, weekRate]
+  // 统一智能引擎：从全局状态构建用户上下文（共享特征工程）
+  const ctx = useMemo(
+    () => buildUserContext(habits, logs, sessions),
+    [habits, logs, sessions]
   );
 
-  // 算法排序：按中断风险/时段匹配/历史完成率对习惯排序，推荐优先做哪个
+  // 神经网络智能激励语：基于真实上下文预测，在线学习用户反馈
+  const aiQuote = useMemo(
+    () => predictQuote(ctx),
+    [ctx, feedbackKey]
+  );
+
+  // 展示语录后记录样本（用于在线学习）
+  useEffect(() => {
+    if (showMotivationalQuotes) {
+      recordQuoteShow(ctx, aiQuote.categoryIdx);
+    }
+  }, [ctx, aiQuote.categoryIdx, showMotivationalQuotes]);
+
+  const handleFeedback = useCallback((useful: boolean) => {
+    recordQuoteFeedback(aiQuote.categoryIdx, useful);
+    // 反馈后换一条新语录
+    setFeedbackKey((k) => k + 1);
+  }, [aiQuote.categoryIdx]);
+
+  // 算法排序：神经网络预测完成概率 + 规则融合，推荐优先做哪个
   const rankedHabits = useMemo(
-    () => rankHabits(habits, logs, new Date().getHours()),
-    [habits, logs]
+    () => rankHabits(habits, logs, new Date().getHours(), ctx),
+    [habits, logs, ctx]
   );
 
   return (
@@ -191,7 +191,6 @@ export function Home() {
           </div>
         </div>
       </section>
-
       {/* 习惯卡片列表 */}
       <section>
         <div className="flex items-center justify-between mb-4">
@@ -239,12 +238,35 @@ export function Home() {
         )}
       </section>
 
-      {/* AI 智能语录 */}
+      {/* AI 智能语录（在线学习用户反馈） */}
       {showMotivationalQuotes && (
         <div className="text-center pt-4">
           <p className="font-mono italic text-dark-muted/60 text-sm">
             "{aiQuote.quote}"
           </p>
+          <div className="flex items-center justify-center gap-3 mt-2">
+            <span className="text-[10px] text-dark-muted/30">
+              {aiQuote.usedNN ? 'AI 已学习你的反馈' : 'AI 规则模式'}
+            </span>
+            <button
+              type="button"
+              onClick={() => handleFeedback(true)}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/5 hover:bg-primary/10 text-dark-muted/50 hover:text-primary transition-colors text-[11px]"
+              title="这条有用，多推荐类似的"
+            >
+              <ThumbsUp className="w-3 h-3" />
+              有用
+            </button>
+            <button
+              type="button"
+              onClick={() => handleFeedback(false)}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/5 hover:bg-red-500/10 text-dark-muted/50 hover:text-red-400 transition-colors text-[11px]"
+              title="这条没用，少推荐"
+            >
+              <ThumbsDown className="w-3 h-3" />
+              没用
+            </button>
+          </div>
         </div>
       )}
     </motion.div>

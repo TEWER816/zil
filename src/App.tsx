@@ -6,7 +6,6 @@ import { Focus } from "@/pages/Focus";
 import { Presets } from "@/pages/Presets";
 import { Settings } from "@/pages/Settings";
 import { GreetingModal } from "@/components/common/GreetingModal";
-import { OnboardingGuide } from "@/components/common/OnboardingGuide";
 import { useTheme } from "@/hooks/useTheme";
 
 export default function App() {
@@ -14,7 +13,6 @@ export default function App() {
   return (
     <Router>
       <GreetingModal />
-      <OnboardingGuide />
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />

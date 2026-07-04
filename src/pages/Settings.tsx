@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { User, Moon, Sun, Quote, Save, Trash2, Sparkles, Upload, Download, CheckCircle2, AlertCircle, Palette, Image as ImageIcon, RotateCcw } from 'lucide-react';
+import { User, Moon, Sun, Quote, Save, Trash2, Sparkles, Upload, Download, CheckCircle2, AlertCircle, Palette, Image as ImageIcon, RotateCcw, Key, Eye, EyeOff, ExternalLink } from 'lucide-react';
 import { useSettingsStore, ThemeMode } from '@/store/settingsStore';
 import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
@@ -66,6 +66,7 @@ export function Settings() {
     bgOverlayOpacity, setBgOverlayOpacity,
     bgBlur, setBgBlur,
     homeProgressImage, setHomeProgressImage,
+    glmApiKey, setGlmApiKey,
   } = useSettingsStore();
   const [tempName, setTempName] = useState(userName);
   const [saved, setSaved] = useState(false);
@@ -75,6 +76,8 @@ export function Settings() {
   const [pendingImportData, setPendingImportData] = useState<Record<string, unknown> | null>(null);
   const [feedback, setFeedback] = useState<FeedbackStatus>('idle');
   const [feedbackMsg, setFeedbackMsg] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [tempApiKey, setTempApiKey] = useState(glmApiKey);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bgInputRef = useRef<HTMLInputElement>(null);
   const progressImgInputRef = useRef<HTMLInputElement>(null);
@@ -598,6 +601,83 @@ export function Settings() {
             onChange={handleProgressImgUpload}
             className="hidden"
           />
+        </div>
+      </motion.section>
+
+      {/* AI 设置：GLM API Key */}
+      <motion.section
+        initial={{ y: 12, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.18 }}
+        className="card"
+      >
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <Key className="w-[18px] h-[18px] text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-display text-lg text-dark-muted">AI 智能设置</h3>
+            <p className="text-xs text-dark-muted/50">配置智谱 GLM-4-Flash，启用 AI 推荐习惯</p>
+          </div>
+        </div>
+
+        <div>
+          <label className="text-xs text-dark-muted/60 mb-2 block tracking-wider uppercase">智谱 API Key</label>
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <input
+                type={showApiKey ? 'text' : 'password'}
+                value={tempApiKey}
+                onChange={(e) => setTempApiKey(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setGlmApiKey(tempApiKey.trim());
+                    showFeedback('success', 'API Key 已保存');
+                  }
+                }}
+                placeholder="在此粘贴智谱 API Key..."
+                className="input w-full pr-10"
+                autoComplete="off"
+                spellCheck={false}
+              />
+              <button
+                type="button"
+                onClick={() => setShowApiKey(!showApiKey)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-dark-muted/40 hover:text-dark-muted/70 transition-colors"
+                title={showApiKey ? '隐藏' : '显示'}
+              >
+                {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <Button onClick={() => {
+              setGlmApiKey(tempApiKey.trim());
+              showFeedback('success', 'API Key 已保存');
+            }}>
+              <Save className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="mt-3 flex items-start gap-2">
+            <Sparkles className="w-3 h-3 text-primary/60 mt-0.5 shrink-0" />
+            <p className="text-xs text-dark-muted/50 leading-relaxed">
+              前往{' '}
+              <a
+                href="https://open.bigmodel.cn/apikey/platform"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline inline-flex items-center gap-0.5"
+              >
+                智谱开放平台
+                <ExternalLink className="w-3 h-3" />
+              </a>
+              {' '}创建 API Key，GLM-4-Flash 模型免费。配置后在「习惯」页可使用 AI 推荐功能。
+            </p>
+          </div>
+          {glmApiKey && (
+            <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary/10 border border-secondary/20">
+              <CheckCircle2 className="w-3 h-3 text-secondary" />
+              <span className="text-xs text-secondary">已配置</span>
+            </div>
+          )}
         </div>
       </motion.section>
 

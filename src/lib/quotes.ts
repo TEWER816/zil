@@ -1,5 +1,5 @@
-// 智能激励语库与特征定义
-// 神经网络根据用户状态特征预测最适合的激励语类别
+// 激励语库与类别定义
+// 神经网络根据用户上下文预测最适合的激励语类别
 
 // ============ 激励语类别 ============
 export const QUOTE_CATEGORIES = [
@@ -58,28 +58,3 @@ export const QUOTES: Record<QuoteCategory, string[]> = {
     '坚持下去，时间会给你最好的答案。',
   ],
 };
-
-// ============ 用户状态特征 ============
-export interface UserFeatures {
-  hour: number;            // 0-23 当前小时
-  streak: number;          // 总连续打卡天数
-  completionRate: number;  // 0-1 今日完成率
-  consistency: number;     // 0-1 过去7天平均完成率
-}
-
-/** 将用户状态归一化为神经网络输入特征向量（4维） */
-export function extractFeatures(f: UserFeatures): number[] {
-  return [
-    f.hour / 24,                        // 时段归一化
-    Math.min(f.streak / 30, 1),         // 连续天数归一化（30天封顶）
-    Math.max(0, Math.min(f.completionRate, 1)), // 完成率
-    Math.max(0, Math.min(f.consistency, 1)),    // 一致性
-  ];
-}
-
-/** one-hot 编码 */
-export function oneHot(idx: number, size: number): number[] {
-  const v = new Array(size).fill(0);
-  v[idx] = 1;
-  return v;
-}

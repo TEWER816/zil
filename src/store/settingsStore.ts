@@ -8,7 +8,6 @@ interface SettingsState {
   showMotivationalQuotes: boolean;
   userName: string;
   hasGreeted: boolean;
-  hasOnboarded: boolean;
   focusBgColor: string;
 
   // 个性化：自定义主色（null 表示用默认薄荷青）
@@ -22,17 +21,20 @@ interface SettingsState {
   // 个性化：主页进度环中心自定义图片（base64 data URL，null 表示无）
   homeProgressImage: string | null;
 
+  // AI：智谱 GLM API Key（空字符串表示未配置）
+  glmApiKey: string;
+
   setTheme: (theme: ThemeMode) => void;
   setShowMotivationalQuotes: (show: boolean) => void;
   setUserName: (name: string) => void;
   setHasGreeted: (v: boolean) => void;
-  setHasOnboarded: (v: boolean) => void;
   setFocusBgColor: (c: string) => void;
   setCustomPrimaryColor: (c: string | null) => void;
   setBackgroundImage: (img: string | null) => void;
   setBgOverlayOpacity: (n: number) => void;
   setBgBlur: (n: number) => void;
   setHomeProgressImage: (img: string | null) => void;
+  setGlmApiKey: (key: string) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -42,7 +44,6 @@ export const useSettingsStore = create<SettingsState>()(
       showMotivationalQuotes: true,
       userName: '',
       hasGreeted: false,
-      hasOnboarded: false,
       focusBgColor: '#1A1A1F',
 
       customPrimaryColor: null,
@@ -51,17 +52,19 @@ export const useSettingsStore = create<SettingsState>()(
       bgBlur: 0,
       homeProgressImage: null,
 
+      glmApiKey: '',
+
       setTheme: (theme) => set({ theme }),
       setShowMotivationalQuotes: (show) => set({ showMotivationalQuotes: show }),
       setUserName: (name) => set({ userName: name }),
       setHasGreeted: (v) => set({ hasGreeted: v }),
-      setHasOnboarded: (v) => set({ hasOnboarded: v }),
       setFocusBgColor: (c) => set({ focusBgColor: c }),
       setCustomPrimaryColor: (c) => set({ customPrimaryColor: c }),
       setBackgroundImage: (img) => set({ backgroundImage: img }),
       setBgOverlayOpacity: (n) => set({ bgOverlayOpacity: n }),
       setBgBlur: (n) => set({ bgBlur: n }),
       setHomeProgressImage: (img) => set({ homeProgressImage: img }),
+      setGlmApiKey: (key) => set({ glmApiKey: key }),
     }),
     {
       name: 'zil-settings'

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Smartphone, Dumbbell, Heart, Plus, Trash2, Clock, Droplet, Briefcase, Bell, ChevronDown, ChevronUp } from 'lucide-react';
+import { Dumbbell, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { usePresetStore } from '@/store/presetStore';
 import { ProgressRing } from '@/components/common/ProgressRing';
 import { Button } from '@/components/common/Button';
@@ -14,94 +14,12 @@ export function Presets() {
       className="space-y-5 md:space-y-6 max-w-3xl"
     >
       <div className="mb-2">
-        <h2 className="text-2xl md:text-3xl font-display font-bold text-dark-muted">健康预设</h2>
-        <p className="text-sm text-dark-muted/60 mt-1">选择适合你的健康生活模板，一切都可以自定义</p>
+        <h2 className="text-2xl md:text-3xl font-display font-bold text-dark-muted">运动健身</h2>
+        <p className="text-sm text-dark-muted/60 mt-1">设定每日锻炼目标，记录你的运动时长</p>
       </div>
 
-      <ScreenTimeSection />
       <FitnessSection />
-      <LifestyleSection />
     </motion.div>
-  );
-}
-
-// ============ 通用组件 ============
-
-/** 折叠卡片 */
-function CollapsibleCard({
-  icon,
-  iconBg,
-  title,
-  desc,
-  enabled,
-  onToggle,
-  children,
-  delay,
-}: {
-  icon: React.ReactNode;
-  iconBg: string;
-  title: string;
-  desc: string;
-  enabled: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-  delay: number;
-}) {
-  const [expanded, setExpanded] = useState(false);
-  return (
-    <motion.section
-      initial={{ y: 12, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ delay }}
-      className="card"
-    >
-      <div className="flex items-center gap-3 mb-4">
-        <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${iconBg}`}>
-          {icon}
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-display text-lg text-dark-muted">{title}</h3>
-          <p className="text-xs text-dark-muted/50">{desc}</p>
-        </div>
-        {/* 启用开关 */}
-        <button
-          type="button"
-          onClick={onToggle}
-          className={`w-11 h-6 rounded-full relative transition-colors shrink-0 ${
-            enabled ? 'bg-primary' : 'bg-white/10 border border-white/10'
-          }`}
-        >
-          <motion.div
-            animate={enabled ? { x: 22 } : { x: 2 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-            className="w-4 h-4 rounded-full bg-white absolute top-1"
-          />
-        </button>
-      </div>
-
-      {enabled && (
-        <>
-          {children}
-          <button
-            type="button"
-            onClick={() => setExpanded(!expanded)}
-            className="mt-4 text-xs text-dark-muted/50 hover:text-primary transition-colors flex items-center gap-1"
-          >
-            {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            {expanded ? '收起设置' : '展开自定义设置'}
-          </button>
-          {expanded && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="mt-3 pt-3 border-t border-white/5"
-            >
-              <ExpandedContent section={title} />
-            </motion.div>
-          )}
-        </>
-      )}
-    </motion.section>
   );
 }
 
@@ -163,188 +81,14 @@ function WeekBarChart({
   );
 }
 
-// ============ 屏幕时间管理 ============
-
-function ScreenTimeSection() {
-  const {
-    screenTime,
-    toggleScreenTime,
-    setScreenTimeLimit,
-    addScreenTime,
-    resetScreenTimeToday,
-    toggleScreenTimeReminder,
-    setScreenTimeReminderInterval,
-  } = usePresetStore();
-
-  const [addMinutes, setAddMinutes] = useState(10);
-  const progress = screenTime.dailyLimitMinutes > 0
-    ? Math.min((screenTime.todayMinutes / screenTime.dailyLimitMinutes) * 100, 100)
-    : 0;
-  const isOvertime = screenTime.todayMinutes > screenTime.dailyLimitMinutes;
-
-  return (
-    <CollapsibleCard
-      icon={<Smartphone className="w-[18px] h-[18px] text-primary" />}
-      iconBg="bg-primary/10 border border-primary/20"
-      title="屏幕时间管理"
-      desc={`每日仅使用手机 ${screenTime.dailyLimitMinutes} 分钟`}
-      enabled={screenTime.enabled}
-      onToggle={toggleScreenTime}
-      delay={0.05}
-    >
-      {/* 进度环 + 数据 */}
-      <div className="flex items-center gap-6">
-        <ProgressRing
-          progress={progress}
-          size={88}
-          strokeWidth={6}
-          color={isOvertime ? '#EF4444' : '#5DCCC5'}
-          glow={false}
-        >
-          <div className="text-center">
-            <span className="text-lg font-display font-bold text-dark-muted tabular-nums">
-              {screenTime.todayMinutes}
-            </span>
-            <span className="text-[10px] text-dark-muted/50 block">/ {screenTime.dailyLimitMinutes}分</span>
-          </div>
-        </ProgressRing>
-        <div className="flex-1 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-dark-muted/60">今日已用</span>
-            <span className={`text-sm font-medium ${isOvertime ? 'text-red-400' : 'text-primary'}`}>
-              {screenTime.todayMinutes} 分钟
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-dark-muted/60">剩余额度</span>
-            <span className={`text-sm font-medium ${isOvertime ? 'text-red-400' : 'text-secondary'}`}>
-              {isOvertime ? `超时 ${screenTime.todayMinutes - screenTime.dailyLimitMinutes} 分` : `${screenTime.dailyLimitMinutes - screenTime.todayMinutes} 分钟`}
-            </span>
-          </div>
-          {isOvertime && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-xs text-red-400 flex items-center gap-1"
-            >
-              <Bell className="w-3 h-3" />
-              已超出每日限额，建议放下手机休息一下
-            </motion.p>
-          )}
-        </div>
-      </div>
-
-      {/* 快速记录使用时间 */}
-      <div className="mt-4 flex items-center gap-2">
-        <div className="flex gap-1.5">
-          {[5, 10, 15, 30].map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => setAddMinutes(m)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
-                addMinutes === m
-                  ? 'bg-primary text-dark-bg'
-                  : 'bg-white/5 text-dark-muted hover:bg-white/10'
-              }`}
-            >
-              +{m}分
-            </button>
-          ))}
-        </div>
-        <Button size="sm" onClick={() => addScreenTime(addMinutes)}>
-          记录使用
-        </Button>
-        <Button size="sm" variant="secondary" onClick={resetScreenTimeToday}>
-          重置今日
-        </Button>
-      </div>
-
-      {/* 7 天柱状图 */}
-      <WeekBarChart
-        data={screenTime.history.map((h) => ({ date: h.date, value: h.minutes }))}
-        unit="分"
-        maxVal={Math.max(screenTime.dailyLimitMinutes, ...screenTime.history.map((h) => h.minutes), 60)}
-        color={isOvertime ? '#EF4444' : '#5DCCC5'}
-      />
-    </CollapsibleCard>
-  );
-}
-
-// 被展开时显示的内容 —— 需要访问 store，放到外部组件
-function ExpandedContent({ section }: { section: string }) {
-  if (section === '屏幕时间管理') return <ScreenTimeCustomizer />;
-  if (section === '运动健身') return <FitnessCustomizer />;
-  return <LifestyleCustomizer />;
-}
-
-function ScreenTimeCustomizer() {
-  const { screenTime, setScreenTimeLimit, toggleScreenTimeReminder, setScreenTimeReminderInterval } = usePresetStore();
-  return (
-    <div className="space-y-4">
-      <div>
-        <label className="text-xs text-dark-muted/60 mb-2 block tracking-wider uppercase">每日限额（分钟）</label>
-        <div className="flex gap-2 flex-wrap">
-          {[30, 60, 90, 120].map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => setScreenTimeLimit(m)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                screenTime.dailyLimitMinutes === m
-                  ? 'bg-primary text-dark-bg'
-                  : 'bg-white/5 text-dark-muted hover:bg-white/10'
-              }`}
-            >
-              {m}分
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-dark-muted">使用提醒</p>
-          <p className="text-xs text-dark-muted/50 mt-0.5">定时提醒你已使用多久</p>
-        </div>
-        <button
-          type="button"
-          onClick={toggleScreenTimeReminder}
-          className={`w-11 h-6 rounded-full relative transition-colors ${
-            screenTime.reminderEnabled ? 'bg-primary' : 'bg-white/10 border border-white/10'
-          }`}
-        >
-          <motion.div
-            animate={screenTime.reminderEnabled ? { x: 22 } : { x: 2 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-            className="w-4 h-4 rounded-full bg-white absolute top-1"
-          />
-        </button>
-      </div>
-      {screenTime.reminderEnabled && (
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-dark-muted/60">每</span>
-          <input
-            type="number"
-            min={5}
-            max={60}
-            value={screenTime.reminderIntervalMinutes}
-            onChange={(e) => {
-              const v = Number(e.target.value);
-              if (v >= 5 && v <= 60) setScreenTimeReminderInterval(v);
-            }}
-            className="w-16 input py-1 text-center text-sm"
-          />
-          <span className="text-xs text-dark-muted/60">分钟提醒一次</span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============ 运动健身 ============
-
 function FitnessSection() {
-  const { fitness, toggleFitness, setFitnessTarget, addFitnessTime, resetFitnessToday } = usePresetStore();
+  const {
+    fitness,
+    toggleFitness,
+    addFitnessTime,
+    resetFitnessToday,
+  } = usePresetStore();
+  const [expanded, setExpanded] = useState(false);
   const [selectedType, setSelectedType] = useState(fitness.exerciseTypes[0]?.id || '');
   const [addMinutes, setAddMinutes] = useState(15);
 
@@ -354,139 +98,182 @@ function FitnessSection() {
   const isCompleted = fitness.todayMinutes >= fitness.dailyTargetMinutes;
 
   return (
-    <CollapsibleCard
-      icon={<Dumbbell className="w-[18px] h-[18px] text-secondary" />}
-      iconBg="bg-secondary/10 border border-secondary/20"
-      title="运动健身"
-      desc={`每日锻炼 ${fitness.dailyTargetMinutes} 分钟`}
-      enabled={fitness.enabled}
-      onToggle={toggleFitness}
-      delay={0.1}
+    <motion.section
+      initial={{ y: 12, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ delay: 0.05 }}
+      className="card"
     >
-      {/* 进度环 + 数据 */}
-      <div className="flex items-center gap-6">
-        <ProgressRing
-          progress={progress}
-          size={88}
-          strokeWidth={6}
-          color={isCompleted ? '#5DCCC5' : '#8DE3DE'}
-          glow={false}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-9 h-9 rounded-lg bg-secondary/10 border border-secondary/20 flex items-center justify-center">
+          <Dumbbell className="w-[18px] h-[18px] text-secondary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-display text-lg text-dark-muted">每日锻炼</h3>
+          <p className="text-xs text-dark-muted/50">目标 {fitness.dailyTargetMinutes} 分钟</p>
+        </div>
+        <button
+          type="button"
+          onClick={toggleFitness}
+          className={`w-11 h-6 rounded-full relative transition-colors shrink-0 ${
+            fitness.enabled ? 'bg-primary' : 'bg-white/10 border border-white/10'
+          }`}
         >
-          <div className="text-center">
-            <span className="text-lg font-display font-bold text-dark-muted tabular-nums">
-              {fitness.todayMinutes}
-            </span>
-            <span className="text-[10px] text-dark-muted/50 block">/ {fitness.dailyTargetMinutes}分</span>
-          </div>
-        </ProgressRing>
-        <div className="flex-1 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-dark-muted/60">今日已练</span>
-            <span className="text-sm font-medium text-secondary">{fitness.todayMinutes} 分钟</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-dark-muted/60">还需完成</span>
-            <span className="text-sm font-medium text-secondary">
-              {isCompleted ? '已完成目标' : `${fitness.dailyTargetMinutes - fitness.todayMinutes} 分钟`}
-            </span>
-          </div>
-          {isCompleted && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-xs text-secondary flex items-center gap-1"
-            >
-              <Dumbbell className="w-3 h-3" />
-              太棒了！今日锻炼目标已达成
-            </motion.p>
-          )}
-        </div>
+          <motion.div
+            animate={fitness.enabled ? { x: 22 } : { x: 2 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            className="w-4 h-4 rounded-full bg-white absolute top-1"
+          />
+        </button>
       </div>
 
-      {/* 锻炼类型选择 */}
-      <div className="mt-4">
-        <p className="text-xs text-dark-muted/50 mb-2 tracking-wider uppercase">选择锻炼类型</p>
-        <div className="flex flex-wrap gap-2 mb-3">
-          {fitness.exerciseTypes.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setSelectedType(t.id)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                selectedType === t.id
-                  ? 'bg-secondary text-dark-bg'
-                  : 'bg-white/5 text-dark-muted hover:bg-white/10'
-              }`}
+      {fitness.enabled && (
+        <>
+          {/* 进度环 + 数据 */}
+          <div className="flex items-center gap-6">
+            <ProgressRing
+              progress={progress}
+              size={88}
+              strokeWidth={6}
+              color={isCompleted ? '#5DCCC5' : '#8DE3DE'}
+              glow={false}
             >
-              {t.name}
-              <span className="text-[10px] ml-1 opacity-60">{t.allocatedMinutes}分</span>
-            </button>
-          ))}
-        </div>
-        {/* 时间分配建议 */}
-        <div className="rounded-xl bg-white/5 p-3 mb-3">
-          <p className="text-xs text-dark-muted/50 mb-2">时间分配建议</p>
-          <div className="flex gap-1 h-2 rounded-full overflow-hidden">
-              {fitness.exerciseTypes.map((t, i) => {
-                const colors = ['#5DCCC5', '#FFC857', '#7BA8C9', '#8DE3DE', '#FF9FB2'];
-              const pct = t.allocatedMinutes / fitness.exerciseTypes.reduce((a, b) => a + b.allocatedMinutes, 0) * 100;
-              return (
-                <div
-                  key={t.id}
-                  style={{ width: `${pct}%`, backgroundColor: colors[i % colors.length] }}
-                  title={`${t.name}: ${t.allocatedMinutes}分`}
-                />
-              );
-            })}
-          </div>
-          <div className="flex flex-wrap gap-2 mt-2">
-              {fitness.exerciseTypes.map((t, i) => {
-                const colors = ['#5DCCC5', '#FFC857', '#7BA8C9', '#8DE3DE', '#FF9FB2'];
-              return (
-                <span key={t.id} className="text-[10px] text-dark-muted/60 flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors[i % colors.length] }} />
-                  {t.name}
+              <div className="text-center">
+                <span className="text-lg font-display font-bold text-dark-muted tabular-nums">
+                  {fitness.todayMinutes}
                 </span>
-              );
-            })}
+                <span className="text-[10px] text-dark-muted/50 block">/ {fitness.dailyTargetMinutes}分</span>
+              </div>
+            </ProgressRing>
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-dark-muted/60">今日已练</span>
+                <span className="text-sm font-medium text-secondary">{fitness.todayMinutes} 分钟</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-dark-muted/60">还需完成</span>
+                <span className="text-sm font-medium text-secondary">
+                  {isCompleted ? '已完成目标' : `${fitness.dailyTargetMinutes - fitness.todayMinutes} 分钟`}
+                </span>
+              </div>
+              {isCompleted && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-xs text-secondary flex items-center gap-1"
+                >
+                  <Dumbbell className="w-3 h-3" />
+                  太棒了！今日锻炼目标已达成
+                </motion.p>
+              )}
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* 快速记录锻炼时间 */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <div className="flex gap-1.5">
-          {[5, 15, 30, 60].map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => setAddMinutes(m)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
-                addMinutes === m
-                  ? 'bg-secondary text-dark-bg'
-                  : 'bg-white/5 text-dark-muted hover:bg-white/10'
-              }`}
+          {/* 锻炼类型选择 */}
+          <div className="mt-4">
+            <p className="text-xs text-dark-muted/50 mb-2 tracking-wider uppercase">选择锻炼类型</p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {fitness.exerciseTypes.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setSelectedType(t.id)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    selectedType === t.id
+                      ? 'bg-secondary text-dark-bg'
+                      : 'bg-white/5 text-dark-muted hover:bg-white/10'
+                  }`}
+                >
+                  {t.name}
+                  <span className="text-[10px] ml-1 opacity-60">{t.allocatedMinutes}分</span>
+                </button>
+              ))}
+            </div>
+            {/* 时间分配建议 */}
+            <div className="rounded-xl bg-white/5 p-3 mb-3">
+              <p className="text-xs text-dark-muted/50 mb-2">时间分配建议</p>
+              <div className="flex gap-1 h-2 rounded-full overflow-hidden">
+                {fitness.exerciseTypes.map((t, i) => {
+                  const colors = ['#5DCCC5', '#FFC857', '#7BA8C9', '#8DE3DE', '#FF9FB2'];
+                  const pct = t.allocatedMinutes / fitness.exerciseTypes.reduce((a, b) => a + b.allocatedMinutes, 0) * 100;
+                  return (
+                    <div
+                      key={t.id}
+                      style={{ width: `${pct}%`, backgroundColor: colors[i % colors.length] }}
+                      title={`${t.name}: ${t.allocatedMinutes}分`}
+                    />
+                  );
+                })}
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {fitness.exerciseTypes.map((t, i) => {
+                  const colors = ['#5DCCC5', '#FFC857', '#7BA8C9', '#8DE3DE', '#FF9FB2'];
+                  return (
+                    <span key={t.id} className="text-[10px] text-dark-muted/60 flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors[i % colors.length] }} />
+                      {t.name}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* 快速记录锻炼时间 */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex gap-1.5">
+              {[5, 15, 30, 60].map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setAddMinutes(m)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                    addMinutes === m
+                      ? 'bg-secondary text-dark-bg'
+                      : 'bg-white/5 text-dark-muted hover:bg-white/10'
+                  }`}
+                >
+                  +{m}分
+                </button>
+              ))}
+            </div>
+            <Button size="sm" onClick={() => addFitnessTime(addMinutes, selectedType)}>
+              记录锻炼
+            </Button>
+            <Button size="sm" variant="secondary" onClick={resetFitnessToday}>
+              重置今日
+            </Button>
+          </div>
+
+          {/* 7 天柱状图 */}
+          <WeekBarChart
+            data={fitness.history.map((h) => ({ date: h.date, value: h.minutes }))}
+            unit="分"
+            maxVal={Math.max(fitness.dailyTargetMinutes, ...fitness.history.map((h) => h.minutes), 60)}
+            color="#FFC857"
+          />
+
+          {/* 展开自定义 */}
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            className="mt-4 text-xs text-dark-muted/50 hover:text-primary transition-colors flex items-center gap-1"
+          >
+            {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            {expanded ? '收起设置' : '展开自定义设置'}
+          </button>
+          {expanded && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="mt-3 pt-3 border-t border-white/5"
             >
-              +{m}分
-            </button>
-          ))}
-        </div>
-        <Button size="sm" onClick={() => addFitnessTime(addMinutes, selectedType)}>
-          记录锻炼
-        </Button>
-        <Button size="sm" variant="secondary" onClick={resetFitnessToday}>
-          重置今日
-        </Button>
-      </div>
-
-      {/* 7 天柱状图 */}
-      <WeekBarChart
-        data={fitness.history.map((h) => ({ date: h.date, value: h.minutes }))}
-        unit="分"
-        maxVal={Math.max(fitness.dailyTargetMinutes, ...fitness.history.map((h) => h.minutes), 60)}
-        color="#FFC857"
-      />
-    </CollapsibleCard>
+              <FitnessCustomizer />
+            </motion.div>
+          )}
+        </>
+      )}
+    </motion.section>
   );
 }
 
@@ -581,306 +368,6 @@ function FitnessCustomizer() {
             <Plus className="w-4 h-4" />
           </Button>
         </div>
-      </div>
-    </div>
-  );
-}
-
-// ============ 人性化生活 ============
-
-function LifestyleSection() {
-  return (
-    <CollapsibleCard
-      icon={<Heart className="w-[18px] h-[18px] text-red-400" />}
-      iconBg="bg-red-500/10 border border-red-500/20"
-      title="人性化生活"
-      desc="规律作息、饮水提醒、工作休息、自定义提醒"
-      enabled={true}
-      onToggle={() => {}}
-      delay={0.15}
-    >
-      <SleepCard />
-      <WaterCard />
-      <WorkRestCard />
-      <CustomRemindersCard />
-    </CollapsibleCard>
-  );
-}
-
-function LifestyleCustomizer() {
-  return <p className="text-xs text-dark-muted/40">各子项可在上方直接调整</p>;
-}
-
-/** 规律作息 */
-function SleepCard() {
-  const { lifestyle, toggleSleep, setBedtime, setWakeTime } = usePresetStore();
-  const { sleep } = lifestyle;
-  return (
-    <div className="rounded-xl bg-white/5 p-3 mb-3">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium text-dark-muted">规律作息</span>
-        </div>
-        <button
-          type="button"
-          onClick={toggleSleep}
-          className={`w-11 h-6 rounded-full relative transition-colors ${
-            sleep.enabled ? 'bg-primary' : 'bg-white/10 border border-white/10'
-          }`}
-        >
-          <motion.div
-            animate={sleep.enabled ? { x: 22 } : { x: 2 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-            className="w-4 h-4 rounded-full bg-white absolute top-1"
-          />
-        </button>
-      </div>
-      {sleep.enabled && (
-        <div className="flex items-center gap-3">
-          <div className="flex-1">
-            <label className="text-[10px] text-dark-muted/50 block mb-1 uppercase tracking-wider">就寝时间</label>
-            <input
-              type="time"
-              value={sleep.bedtime}
-              onChange={(e) => setBedtime(e.target.value)}
-              className="input w-full py-1.5 text-sm"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="text-[10px] text-dark-muted/50 block mb-1 uppercase tracking-wider">起床时间</label>
-            <input
-              type="time"
-              value={sleep.wakeTime}
-              onChange={(e) => setWakeTime(e.target.value)}
-              className="input w-full py-1.5 text-sm"
-            />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/** 饮水提醒 */
-function WaterCard() {
-  const { lifestyle, toggleWater, setWaterInterval, setWaterTarget, addWaterCup, resetWaterToday } = usePresetStore();
-  const { water } = lifestyle;
-  const progress = water.targetCups > 0 ? Math.min((water.todayCups / water.targetCups) * 100, 100) : 0;
-  return (
-    <div className="rounded-xl bg-white/5 p-3 mb-3">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Droplet className="w-4 h-4 text-blue-400" />
-          <span className="text-sm font-medium text-dark-muted">饮水提醒</span>
-        </div>
-        <button
-          type="button"
-          onClick={toggleWater}
-          className={`w-11 h-6 rounded-full relative transition-colors ${
-            water.enabled ? 'bg-primary' : 'bg-white/10 border border-white/10'
-          }`}
-        >
-          <motion.div
-            animate={water.enabled ? { x: 22 } : { x: 2 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-            className="w-4 h-4 rounded-full bg-white absolute top-1"
-          />
-        </button>
-      </div>
-      {water.enabled && (
-        <>
-          <div className="flex items-center gap-4">
-            <ProgressRing progress={progress} size={64} strokeWidth={5} color="#7BA8C9" glow={false}>
-              <span className="text-sm font-bold text-dark-muted">{water.todayCups}/{water.targetCups}</span>
-            </ProgressRing>
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-dark-muted/60">每</span>
-                <input
-                  type="number"
-                  min={15}
-                  max={180}
-                  value={water.intervalMinutes}
-                  onChange={(e) => {
-                    const v = Number(e.target.value);
-                    if (v >= 15) setWaterInterval(v);
-                  }}
-                  className="w-16 input py-1 text-center text-sm"
-                />
-                <span className="text-xs text-dark-muted/60">分钟提醒</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-dark-muted/60">目标</span>
-                <input
-                  type="number"
-                  min={1}
-                  max={20}
-                  value={water.targetCups}
-                  onChange={(e) => {
-                    const v = Number(e.target.value);
-                    if (v >= 1) setWaterTarget(v);
-                  }}
-                  className="w-16 input py-1 text-center text-sm"
-                />
-                <span className="text-xs text-dark-muted/60">杯/天</span>
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-2 mt-3">
-            <Button size="sm" onClick={addWaterCup}>
-              <Droplet className="w-3.5 h-3.5" />
-              喝一杯水
-            </Button>
-            <Button size="sm" variant="secondary" onClick={resetWaterToday}>
-              重置今日
-            </Button>
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-/** 工作休息分配 */
-function WorkRestCard() {
-  const { lifestyle, toggleWorkRest, setWorkMinutes, setRestMinutes } = usePresetStore();
-  const { workRest } = lifestyle;
-  return (
-    <div className="rounded-xl bg-white/5 p-3 mb-3">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Briefcase className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium text-dark-muted">工作休息分配</span>
-        </div>
-        <button
-          type="button"
-          onClick={toggleWorkRest}
-          className={`w-11 h-6 rounded-full relative transition-colors ${
-            workRest.enabled ? 'bg-primary' : 'bg-white/10 border border-white/10'
-          }`}
-        >
-          <motion.div
-            animate={workRest.enabled ? { x: 22 } : { x: 2 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-            className="w-4 h-4 rounded-full bg-white absolute top-1"
-          />
-        </button>
-      </div>
-      {workRest.enabled && (
-        <div className="flex items-center gap-3">
-          <div className="flex-1">
-            <label className="text-[10px] text-dark-muted/50 block mb-1 uppercase tracking-wider">工作</label>
-            <div className="flex items-center gap-1.5">
-              <input
-                type="number"
-                min={10}
-                max={120}
-                value={workRest.workMinutes}
-                onChange={(e) => {
-                  const v = Number(e.target.value);
-                  if (v >= 10) setWorkMinutes(v);
-                }}
-                className="input w-full py-1.5 text-center text-sm"
-              />
-              <span className="text-xs text-dark-muted/50">分</span>
-            </div>
-          </div>
-          <div className="flex-1">
-            <label className="text-[10px] text-dark-muted/50 block mb-1 uppercase tracking-wider">休息</label>
-            <div className="flex items-center gap-1.5">
-              <input
-                type="number"
-                min={5}
-                max={60}
-                value={workRest.restMinutes}
-                onChange={(e) => {
-                  const v = Number(e.target.value);
-                  if (v >= 5) setRestMinutes(v);
-                }}
-                className="input w-full py-1.5 text-center text-sm"
-              />
-              <span className="text-xs text-dark-muted/50">分</span>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/** 自定义提醒 */
-function CustomRemindersCard() {
-  const { lifestyle, addCustomReminder, removeCustomReminder, toggleCustomReminder } = usePresetStore();
-  const { customReminders } = lifestyle;
-  const [newName, setNewName] = useState('');
-  const [newTime, setNewTime] = useState('12:00');
-
-  return (
-    <div className="rounded-xl bg-white/5 p-3">
-      <div className="flex items-center gap-2 mb-3">
-        <Bell className="w-4 h-4 text-primary" />
-        <span className="text-sm font-medium text-dark-muted">重要事项提醒</span>
-      </div>
-      {/* 已有提醒列表 */}
-      {customReminders.length > 0 && (
-        <div className="space-y-2 mb-3">
-          {customReminders.map((r) => (
-            <div key={r.id} className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => toggleCustomReminder(r.id)}
-                className={`w-9 h-5 rounded-full relative transition-colors shrink-0 ${
-                  r.enabled ? 'bg-primary' : 'bg-white/10'
-                }`}
-              >
-                <motion.div
-                  animate={r.enabled ? { x: 18 } : { x: 2 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                  className="w-3.5 h-3.5 rounded-full bg-white absolute top-0.5"
-                />
-              </button>
-              <span className={`text-sm flex-1 ${r.enabled ? 'text-dark-muted' : 'text-dark-muted/40'}`}>
-                {r.name}
-              </span>
-              <span className="text-xs text-dark-muted/50 font-mono">{r.time}</span>
-              <button
-                type="button"
-                onClick={() => removeCustomReminder(r.id)}
-                className="w-7 h-7 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 hover:bg-red-500/20 transition-colors shrink-0"
-              >
-                <Trash2 className="w-3 h-3" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-      {/* 添加新提醒 */}
-      <div className="flex items-center gap-2">
-        <input
-          type="text"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          placeholder="提醒事项"
-          className="input flex-1 py-1.5 text-sm"
-        />
-        <input
-          type="time"
-          value={newTime}
-          onChange={(e) => setNewTime(e.target.value)}
-          className="input py-1.5 text-sm"
-        />
-        <Button
-          size="sm"
-          onClick={() => {
-            if (newName.trim()) {
-              addCustomReminder(newName.trim(), newTime);
-              setNewName('');
-            }
-          }}
-        >
-          <Plus className="w-4 h-4" />
-        </Button>
       </div>
     </div>
   );
