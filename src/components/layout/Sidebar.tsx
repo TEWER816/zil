@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, List, Timer, HeartPulse, Settings } from 'lucide-react';
+import { Home, List, Timer, HeartPulse, CalendarDays, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const navItems = [
@@ -7,6 +7,7 @@ const navItems = [
   { path: '/habits', icon: List, label: '习惯' },
   { path: '/focus', icon: Timer, label: '专注' },
   { path: '/presets', icon: HeartPulse, label: '预设' },
+  { path: '/calendar', icon: CalendarDays, label: '日程' },
   { path: '/settings', icon: Settings, label: '设置' },
 ];
 

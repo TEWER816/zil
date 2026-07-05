@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, RotateCcw, Sparkles, Maximize2, Minimize2, Palette, Target } from 'lucide-react';
+import { Play, Pause, RotateCcw, Sparkles, Maximize2, Minimize2, Palette, Target, Trophy } from 'lucide-react';
 import { useFocusStore } from '@/store/focusStore';
 import { useHabitStore } from '@/store/habitStore';
 import { useUIStore } from '@/store/uiStore';
@@ -10,6 +10,7 @@ import { recommendFocusDuration, recordFocusChoice } from '@/lib/focusRecommende
 import { buildUserContext } from '@/lib/intelligence';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
+import { playFocusCompleteSound } from '@/lib/sound';
 
 export function Focus() {
   const {
@@ -38,7 +39,9 @@ export function Focus() {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showTaskPrompt, setShowTaskPrompt] = useState(false);
   const [taskInput, setTaskInput] = useState('');
+  const [showCompleteToast, setShowCompleteToast] = useState(false);
   const intervalRef = useRef<number | null>(null);
+  const prevTimeLeftRef = useRef<number>(timeLeft);
 
   const { focusMode, enterFocusMode, exitFocusMode } = useUIStore();
   const { focusBgColor, setFocusBgColor } = useSettingsStore();
@@ -127,6 +130,22 @@ export function Focus() {
       }
     };
   }, [isRunning, tick]);
+
+  // 专注完成反馈：倒计时归零时播放音效并显示提示
+  useEffect(() => {
+    if (
+      sessionType === 'focus' &&
+      timeLeft === 0 &&
+      prevTimeLeftRef.current > 0 &&
+      prevTimeLeftRef.current <= focusDuration * 60
+    ) {
+      playFocusCompleteSound();
+      setShowCompleteToast(true);
+      const timer = window.setTimeout(() => setShowCompleteToast(false), 5000);
+      return () => clearTimeout(timer);
+    }
+    prevTimeLeftRef.current = timeLeft;
+  }, [timeLeft, sessionType, focusDuration]);
 
   // 格式化时间
   const formatTime = (seconds: number) => {
@@ -251,6 +270,26 @@ export function Focus() {
                 placeholder="#000000"
                 maxLength={7}
               />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 专注完成提示 */}
+      <AnimatePresence>
+        {showCompleteToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -16, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.96 }}
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-secondary/15 border border-secondary/30 backdrop-blur-md flex items-center gap-3"
+          >
+            <Trophy className="w-5 h-5 text-secondary" />
+            <div>
+              <p className="text-sm font-medium text-secondary">专注完成！</p>
+              <p className="text-xs text-secondary/80">
+                本次专注 {focusDuration} 分钟，又向目标迈进一步
+              </p>
             </div>
           </motion.div>
         )}

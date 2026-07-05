@@ -22,7 +22,7 @@
     "appId": "com.zil.desktop",
     "productName": "Zil Desktop",
     "directories": {
-      "output": "release"
+      "output": "release3"
     },
     "files": [
       "dist/**/*",

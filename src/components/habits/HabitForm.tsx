@@ -9,7 +9,11 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Sun, Moon, BookOpen, Dumbbell, Heart, Leaf, Coffee, Music, Pen, Zap, Star, Award
 };
 
-export function HabitForm() {
+interface HabitFormProps {
+  children?: React.ReactNode;
+}
+
+export function HabitForm({ children }: HabitFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('Sun');
@@ -58,17 +62,23 @@ export function HabitForm() {
 
   return (
     <>
-      {/* 添加按钮 */}
-      <motion.button
-        type="button"
-        whileHover={{ scale: 1.03 }}
-        whileTap={{ scale: 0.97 }}
-        onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-dark-bg font-medium text-sm hover:bg-primaryLight transition-colors shadow-lg shadow-primary/15"
-      >
-        <Plus className="w-4 h-4" />
-        <span>添加习惯</span>
-      </motion.button>
+      {/* 添加按钮：支持自定义触发器 */}
+      {children ? (
+        <button type="button" onClick={() => setIsOpen(true)} className="contents">
+          {children}
+        </button>
+      ) : (
+        <motion.button
+          type="button"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={() => setIsOpen(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-dark-bg font-medium text-sm hover:bg-primaryLight transition-colors shadow-lg shadow-primary/15"
+        >
+          <Plus className="w-4 h-4" />
+          <span>添加习惯</span>
+        </motion.button>
+      )}
 
       {/* 添加习惯模态框 */}
       <Modal isOpen={isOpen} onClose={handleClose} title="添加新习惯">

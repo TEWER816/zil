@@ -1,6 +1,6 @@
 import { useMemo, useEffect, useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { Sparkles, TrendingUp, Flame, CheckCircle2, Maximize2, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Sparkles, TrendingUp, Flame, CheckCircle2, Maximize2, ThumbsUp, ThumbsDown, Plus, PartyPopper } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useHabitStore, getLocalDateString } from '@/store/habitStore';
 import { useFocusStore } from '@/store/focusStore';
@@ -138,6 +138,21 @@ export function Home() {
               </p>
             </div>
 
+            {/* 全部完成庆祝 */}
+            <AnimatePresence>
+              {isAllDone && activeHabits.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-secondary/10 border border-secondary/30 text-secondary text-sm"
+                >
+                  <PartyPopper className="w-4 h-4" />
+                  <span>今日习惯全部完成，太棒了！</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* 统计胶囊 */}
             <div className="flex flex-wrap gap-2">
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/10 border border-secondary/20">
@@ -202,12 +217,23 @@ export function Home() {
         </div>
 
         {activeHabits.length === 0 ? (
-          <div className="card text-center py-10">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 mb-3">
-              <Sparkles className="w-6 h-6 text-primary/70" />
+          <div className="card text-center py-12">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 mb-4">
+              <Sparkles className="w-7 h-7 text-primary/70" />
             </div>
-            <p className="text-dark-muted mb-1">还没有添加任何习惯</p>
-            <p className="text-sm text-dark-muted/60">点击上方加号开始培养你的第一个习惯吧</p>
+            <h4 className="text-lg font-display font-medium text-dark-muted mb-1">从这里开始</h4>
+            <p className="text-sm text-dark-muted/60 mb-5 max-w-xs mx-auto">
+              培养一个习惯最好的时间是现在。写下你想坚持的第一件事。
+            </p>
+            <HabitForm>
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-dark-bg font-medium text-sm hover:bg-primaryLight transition-colors shadow-lg shadow-primary/15"
+              >
+                <Plus className="w-4 h-4" />
+                添加第一个习惯
+              </button>
+            </HabitForm>
           </div>
         ) : (
           <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">

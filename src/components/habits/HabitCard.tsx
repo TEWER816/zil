@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Check, Flame, Sun, Moon, BookOpen, Dumbbell, Heart, Leaf, Coffee, Music, Pen, Zap, Star, Award } from 'lucide-react';
 import { Habit as HabitType } from '@/store/habitStore';
 import { playCheckinSound, playUncheckSound } from '@/lib/sound';
@@ -15,12 +17,15 @@ interface HabitCardProps {
 
 export function HabitCard({ habit, isCompleted, streak = 0, onToggle }: HabitCardProps) {
   const IconComponent = iconMap[habit.icon] || Sun;
+  const [justCompleted, setJustCompleted] = useState(false);
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // 完成时播放提示音，取消时播放轻提示
+    // 完成时播放提示音并触发视觉反馈，取消时播放轻提示
     if (!isCompleted) {
       playCheckinSound();
+      setJustCompleted(true);
+      setTimeout(() => setJustCompleted(false), 600);
     } else {
       playUncheckSound();
     }
@@ -28,11 +33,17 @@ export function HabitCard({ habit, isCompleted, streak = 0, onToggle }: HabitCar
   };
 
   return (
-    <div className="card group">
+    <motion.div
+      className="card group"
+      animate={justCompleted ? { scale: [1, 1.02, 1] } : {}}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+    >
       <div className="flex items-center gap-3 md:gap-4">
         {/* 图标 */}
-        <div
-          className="w-11 h-11 md:w-12 md:h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors"
+        <motion.div
+          className="w-11 h-11 md:w-12 md:h-12 rounded-xl flex items-center justify-center shrink-0"
+          animate={justCompleted ? { rotate: [0, -8, 8, 0], scale: [1, 1.12, 1] } : {}}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
           style={{
             backgroundColor: `${habit.color}${isCompleted ? '25' : '15'}`,
             border: `1px solid ${habit.color}${isCompleted ? '60' : '30'}`,
@@ -42,7 +53,7 @@ export function HabitCard({ habit, isCompleted, streak = 0, onToggle }: HabitCar
             className={`w-5 h-5 transition-colors ${isCompleted ? '' : 'text-dark-muted/70'}`}
             style={isCompleted ? { color: habit.color } : undefined}
           />
-        </div>
+        </motion.div>
 
         {/* 习惯信息 */}
         <div className="flex-1 min-w-0">
@@ -69,10 +80,11 @@ export function HabitCard({ habit, isCompleted, streak = 0, onToggle }: HabitCar
         </div>
 
         {/* 明确的打卡按钮 */}
-        <button
+        <motion.button
           type="button"
           onClick={handleToggle}
-          className="shrink-0 px-3.5 md:px-4 py-1.5 md:py-2 rounded-xl text-xs md:text-sm font-medium transition-all active:scale-95"
+          whileTap={{ scale: 0.92 }}
+          className="shrink-0 px-3.5 md:px-4 py-1.5 md:py-2 rounded-xl text-xs md:text-sm font-medium transition-colors"
           style={
             isCompleted
               ? {
@@ -90,8 +102,8 @@ export function HabitCard({ habit, isCompleted, streak = 0, onToggle }: HabitCar
             {isCompleted && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
             {isCompleted ? '已完成' : '打卡'}
           </span>
-        </button>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 }

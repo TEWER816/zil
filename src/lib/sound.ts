@@ -80,3 +80,14 @@ export function playTickSound() {
   if (!ctx) return;
   playTone(ctx, { frequency: 880, duration: 0.12, type: 'sine', gain: 0.06 });
 }
+
+/**
+ * 专注完成提示音：柔和上行三音，带来结束感
+ */
+export function playFocusCompleteSound() {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  playTone(ctx, { frequency: 523.25, duration: 0.5, delay: 0,    type: 'sine', gain: 0.10 }); // C5
+  playTone(ctx, { frequency: 659.25, duration: 0.5, delay: 0.12, type: 'sine', gain: 0.08 }); // E5
+  playTone(ctx, { frequency: 783.99, duration: 0.6, delay: 0.24, type: 'sine', gain: 0.06 }); // G5
+}
