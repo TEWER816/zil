@@ -1,0 +1,51 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# Local Netlify folder
+.netlify
+
+# Build outputs and distribution
+/demo
+/demo (2)
+/release
+/release2
+/release3
+/build
+/output
+/dist (2)
+/zil web
+/zil-demo
+/zil-intro
+/zil1.0
+/web demo
+
+# IDE and share packages
+.trae
+.trae-html-share-packages
+
+# Packaged archives
+*.zip
+*.7z
+*.exe
+*.blockmap

@@ -1,0 +1,485 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Caveat:wght@500;600;700&family=Patrick+Hand&family=Kalam:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* 正文：Patrick Hand / Kalam（手写印刷体）+ Noto Sans SC 中文兜底；标题：Caveat（手写体）*/
+  font-family: "Patrick Hand", "Kalam", "Noto Sans SC", system-ui, sans-serif;
+  line-height: 1.65;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* 主色 CSS 变量（空格分隔 RGB，支持 <alpha-value> 透明度修饰符） */
+  --color-primary: 93 204 197;       /* #5DCCC5 薄荷青 */
+  --color-primary-light: 141 227 222; /* #8DE3DE */
+  --color-primary-dark: 61 184 177;   /* #3DB8B1 */
+  /* 手绘墨色：用于线条、描边、文字 */
+  --ink-color: 90 107 122;            /* #5A6B7A 蓝灰墨 */
+}
+
+/* ============ 手绘可爱风主题（手工纸质感） ============ */
+body {
+  background-color: #FBF8F1;          /* 暖白手工纸 */
+  color: #5A6B7A;
+  transition: background-color 0.4s ease, color 0.4s ease;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* 全局纸面纹理叠层：极淡的颗粒噪点，营造手工纸质感 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='12'/><feColorMatrix type='matrix' values='0 0 0 0 0.35  0 0 0 0 0.4  0 0 0 0 0.45  0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  opacity: 0.55;
+  mix-blend-mode: multiply;
+}
+
+/* ============ 背景氛围（柔和光晕 - 可爱三色） ============ */
+.aurora-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* 薄荷青光晕（左上）*/
+.aurora-bg::before {
+  content: "";
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  top: -160px;
+  left: -120px;
+  background: radial-gradient(circle, rgba(93, 204, 197, 0.20), transparent 70%);
+  filter: blur(60px);
+  border-radius: 50%;
+}
+
+/* 奶油黄光晕（右下）*/
+.aurora-bg::after {
+  content: "";
+  position: absolute;
+  width: 460px;
+  height: 460px;
+  bottom: -140px;
+  right: -100px;
+  background: radial-gradient(circle, rgba(255, 200, 87, 0.18), transparent 70%);
+  filter: blur(60px);
+  border-radius: 50%;
+}
+
+/* 珊瑚粉光晕（中部点缀）*/
+.aurora-bg-extra {
+  position: fixed;
+  width: 380px;
+  height: 380px;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 159, 178, 0.12), transparent 70%);
+  filter: blur(70px);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@keyframes aurora-drift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(40px, 30px); }
+}
+
+/* ============ 自定义滚动条（手绘可爱） ============ */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(93, 204, 197, 0.35);
+  border-radius: 10px 12px 8px 11px / 11px 8px 12px 10px;
+  border: 1.5px solid rgba(93, 204, 197, 0.18);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(93, 204, 197, 0.55);
+}
+
+/* ============ 组件样式（手绘可爱风） ============ */
+@layer components {
+  /* 玻璃卡片 - 手绘纸面 + 不规则圆角 + 双重描边 + 手绘偏移阴影 */
+  .card {
+    @apply p-5;
+    position: relative;
+    background: rgba(255, 252, 246, 0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1.8px solid rgba(93, 204, 197, 0.35);
+    /* 不规则手绘圆角 */
+    border-radius: 22px 28px 20px 26px / 26px 20px 28px 22px;
+    /* 手绘偏移阴影 + 柔光 */
+    box-shadow:
+      3px 4px 0 rgba(93, 204, 197, 0.12),
+      0 6px 22px rgba(93, 204, 197, 0.10),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    /* 不对卡片施加 displacement filter，保证内部文字/数字清晰 */
+  }
+
+  .card:hover {
+    border-color: rgba(93, 204, 197, 0.55);
+    box-shadow:
+      4px 5px 0 rgba(93, 204, 197, 0.18),
+      0 10px 30px rgba(93, 204, 197, 0.16),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+
+  /* 按钮样式 - 可爱圆润 + 手绘描边 + 偏移阴影 */
+  .btn-primary {
+    @apply font-semibold px-4 py-2;
+    color: #1f2a30;
+    background: rgba(141, 227, 222, 0.95);
+    border: 1.8px solid rgba(61, 184, 177, 0.85);
+    border-radius: 16px 22px 14px 20px / 20px 14px 22px 16px;
+    transition: all 0.25s ease;
+    box-shadow:
+      2.5px 3px 0 rgba(61, 184, 177, 0.22),
+      0 4px 14px rgba(93, 204, 197, 0.30);
+  }
+
+  .btn-primary:hover {
+    background: rgba(93, 204, 197, 1);
+    box-shadow:
+      3px 4px 0 rgba(61, 184, 177, 0.32),
+      0 6px 20px rgba(93, 204, 197, 0.42);
+    transform: translate(-1px, -1px);
+  }
+
+  .btn-primary:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0 rgba(61, 184, 177, 0.22);
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2;
+    color: #5A6B7A;
+    background: rgba(255, 252, 246, 0.92);
+    border: 1.8px solid rgba(93, 204, 197, 0.35);
+    border-radius: 16px 22px 14px 20px / 20px 14px 22px 16px;
+    transition: all 0.25s ease;
+    box-shadow: 2px 2.5px 0 rgba(93, 204, 197, 0.10);
+  }
+
+  .btn-secondary:hover {
+    color: #3DB8B1;
+    border-color: rgba(93, 204, 197, 0.65);
+    background: rgba(93, 204, 197, 0.10);
+    box-shadow: 3px 3.5px 0 rgba(93, 204, 197, 0.18);
+    transform: translate(-1px, -1px);
+  }
+
+  /* 输入框样式 - 手绘描边 + 不规则圆角（不加 filter 保证文字清晰）*/
+  .input {
+    @apply px-3.5 py-2.5;
+    color: #5A6B7A;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1.8px dashed rgba(93, 204, 197, 0.45);
+    border-radius: 14px 20px 12px 18px / 18px 12px 20px 14px;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+  }
+
+  .input:focus {
+    border-color: rgba(93, 204, 197, 0.75);
+    border-style: solid;
+    outline: none;
+    background: rgba(255, 255, 255, 1);
+    box-shadow:
+      2px 2px 0 rgba(93, 204, 197, 0.15),
+      0 0 0 4px rgba(93, 204, 197, 0.14);
+  }
+
+  .input::placeholder {
+    color: rgba(90, 107, 122, 0.45);
+    font-style: italic;
+  }
+
+  /* 侧边栏导航项 - 手绘圆润风 */
+  .nav-item {
+    @apply flex items-center gap-3 px-4 py-3 text-[14px] font-medium leading-relaxed;
+    color: rgba(90, 107, 122, 0.78);
+    border-radius: 14px 20px 12px 18px / 18px 12px 20px 14px;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .nav-item:hover {
+    color: #5A6B7A;
+    background: rgba(93, 204, 197, 0.10);
+  }
+
+  .nav-item.active {
+    color: #3DB8B1;
+    background: rgba(93, 204, 197, 0.16);
+    border: 1.5px solid rgba(93, 204, 197, 0.35);
+  }
+
+  /* 侧边栏 - 暖白玻璃拟态（手工纸感）*/
+  .sidebar-aside {
+    background: rgba(255, 252, 246, 0.86);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+}
+
+/* ============ 动画过渡 ============ */
+.transition-soft {
+  transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* 移动端安全区域 */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* 防止移动端点击高亮 */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 计时器呼吸光晕 */
+@keyframes timer-breathe {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.5; }
+}
+
+.timer-glow-soft {
+  animation: timer-breathe 4s ease-in-out infinite;
+}
+
+/* 完成动画 */
+@keyframes complete-check {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-complete {
+  animation: complete-check 0.35s ease-out forwards;
+}
+
+/* 文字渐变（薄荷青） */
+.text-gradient-amber {
+  background: linear-gradient(135deg, #8DE3DE, #5DCCC5);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.text-gradient-mint {
+  background: linear-gradient(135deg, #FFD980, #FFC857);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* ============ 文字可读性（暖白底深字） ============ */
+.text-dark-muted\/20 {
+  color: rgba(90, 107, 122, 0.3);
+}
+.text-dark-muted\/30 {
+  color: rgba(90, 107, 122, 0.4);
+}
+.text-dark-muted\/40 {
+  color: rgba(90, 107, 122, 0.55);
+}
+.text-dark-muted\/50 {
+  color: rgba(90, 107, 122, 0.65);
+}
+.text-dark-muted\/60 {
+  color: rgba(90, 107, 122, 0.75);
+}
+.text-dark-muted\/70 {
+  color: rgba(90, 107, 122, 0.85);
+}
+
+/* ============ 暖白主题下的透明背景适配 ============ */
+.bg-white\/5 {
+  background-color: rgba(93, 204, 197, 0.06);
+}
+.bg-white\/10 {
+  background-color: rgba(93, 204, 197, 0.1);
+}
+.bg-white\/\[0\.02\] {
+  background-color: rgba(93, 204, 197, 0.04);
+}
+.bg-white\/4 {
+  background-color: rgba(93, 204, 197, 0.05);
+}
+
+/* 边框可见性 */
+.border-white\/5 {
+  border-color: rgba(93, 204, 197, 0.18) !important;
+}
+.border-white\/10 {
+  border-color: rgba(93, 204, 197, 0.28) !important;
+}
+
+/* 半透明深色背景改为暖白 */
+.bg-dark-bg\/50 {
+  background-color: rgba(255, 252, 246, 0.88) !important;
+  border-color: rgba(93, 204, 197, 0.22) !important;
+}
+.bg-dark-bg\/70 {
+  background-color: rgba(255, 252, 246, 0.90) !important;
+}
+.bg-dark-bg\/80 {
+  background-color: rgba(255, 252, 246, 0.94) !important;
+}
+.bg-dark-bg\/85 {
+  background-color: rgba(255, 252, 246, 0.95) !important;
+  border-color: rgba(93, 204, 197, 0.22) !important;
+}
+
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .aurora-bg::before,
+  .aurora-bg::after,
+  .timer-glow-soft {
+    animation: none;
+  }
+}
+
+/* spin keyframe */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ============ 自定义背景图层 ============ */
+.custom-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 自定义背景遮罩 - 保证内容可读性 */
+.custom-bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: rgba(255, 252, 246, var(--bg-overlay-opacity, 0.8));
+}
+
+/* ============ 手绘风工具类 ============ */
+@layer utilities {
+  /* 手绘不规则圆角（不同尺寸）*/
+  .radius-hand {
+    border-radius: 18px 24px 16px 22px / 22px 16px 24px 18px;
+  }
+  .radius-hand-sm {
+    border-radius: 12px 16px 10px 14px / 14px 10px 16px 12px;
+  }
+  .radius-hand-lg {
+    border-radius: 26px 32px 22px 30px / 30px 22px 32px 26px;
+  }
+  /* 手绘抖动 filter */
+  .filter-hand {
+    filter: url(#handDrawn);
+  }
+  .filter-hand-strong {
+    filter: url(#handDrawnStrong);
+  }
+  .filter-pencil {
+    filter: url(#pencilSketch);
+  }
+  .filter-paper {
+    filter: url(#paperTexture);
+  }
+  .filter-hand-shadow {
+    filter: url(#handShadow);
+  }
+  /* 手绘描边 */
+  .border-hand {
+    border-width: 1.8px;
+    border-style: solid;
+  }
+  .border-hand-dashed {
+    border-width: 1.8px;
+    border-style: dashed;
+  }
+  /* 手绘偏移阴影（CSS 备用，无需 filter）*/
+  .shadow-hand {
+    box-shadow: 2.5px 3px 0 rgba(93, 204, 197, 0.18), 0 6px 18px rgba(93, 204, 197, 0.10);
+  }
+  .shadow-hand-sm {
+    box-shadow: 2px 2px 0 rgba(93, 204, 197, 0.14);
+  }
+}
+
+/* ============ 标题手写感（Caveat 手写体） ============ */
+.font-display {
+  font-family: "Caveat", "Patrick Hand", "Noto Sans SC", cursive;
+  letter-spacing: 0;
+  font-weight: 700;
+  font-variation-settings: "wght" 700;
+}
+
+h1, h2, .font-display {
+  font-family: "Caveat", "Patrick Hand", "Noto Sans SC", cursive;
+  font-variation-settings: "wght" 700;
+}
+
+/* 正文轻手写感 */
+body, p, span, li, button, input, label, select, textarea {
+  font-family: "Patrick Hand", "Kalam", "Noto Sans SC", system-ui, sans-serif;
+}
+
+/* 等宽保留（用于数字、签名）*/
+.font-mono {
+  font-family: "Kalam", "Patrick Hand", ui-monospace, monospace;
+}
+
+/* ============ 手绘风装饰：分隔线（波浪线） ============ */
+.divider-hand {
+  height: 6px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 8' preserveAspectRatio='none'><path d='M0 4 Q 10 0 20 4 T 40 4 T 60 4 T 80 4 T 100 4 T 120 4' fill='none' stroke='%235DCCC5' stroke-width='1.6' stroke-linecap='round' opacity='0.55'/></svg>");
+  background-size: 120px 6px;
+  background-repeat: repeat-x;
+  filter: url(#handDrawn);
+}
+
+/* ============ 手绘装饰：手绘下划线（标题/强调） ============ */
+.underline-hand {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 8' preserveAspectRatio='none'><path d='M2 5 Q 25 1 50 4 Q 75 7 98 3' fill='none' stroke='%235DCCC5' stroke-width='2' stroke-linecap='round' opacity='0.7'/></svg>");
+  background-position: bottom left;
+  background-size: 100% 7px;
+  background-repeat: no-repeat;
+  padding-bottom: 6px;
+}
+
+/* ============ 手绘边角装饰（点缀） ============ */
+.corner-doodle {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.55;
+}

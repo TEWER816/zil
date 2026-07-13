@@ -1,0 +1,16 @@
+{
+  "name": "zil-server",
+  "version": "1.0.0",
+  "description": "Zil 自律辅助网站后端 - Express + SQLite",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
+}

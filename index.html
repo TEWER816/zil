@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zil</title>
+    <script type="module">
+      if (import.meta.hot?.on) {
+        import.meta.hot.on('vite:error', (error) => {
+          if (error.err) {
+            console.error(
+              [error.err.message, error.err.frame].filter(Boolean).join('\n'),
+            )
+          }
+        })
+      }
+    </script>
+  </head>
+  <body>
+    <!-- 全局手绘风 SVG filter 系统：手绘抖动 / 粗糙边缘 / 纸面纹理 / 铅笔笔触 / 手绘偏移阴影 -->
+    <svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+      <defs>
+        <!-- 轻度手绘抖动（卡片、按钮基础）-->
+        <filter id="handDrawn" x="-3%" y="-3%" width="106%" height="106%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="3" seed="3" result="noise"/>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.6" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+        <!-- 强手绘抖动（装饰元素）-->
+        <filter id="handDrawnStrong" x="-4%" y="-4%" width="108%" height="108%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.024" numOctaves="3" seed="7" result="noise"/>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.2" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+        <!-- 纸面纹理（叠在背景上，营造手工纸质感）-->
+        <filter id="paperTexture" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="12" result="paper"/>
+          <feColorMatrix in="paper" type="matrix" values="0 0 0 0 0.92  0 0 0 0 0.95  0 0 0 0 0.97  0 0 0 0.045 0" result="paperTint"/>
+          <feComposite in="paperTint" in2="SourceGraphic" operator="in" result="masked"/>
+          <feMerge>
+            <feMergeNode in="SourceGraphic"/>
+            <feMergeNode in="masked"/>
+          </feMerge>
+        </filter>
+        <!-- 铅笔笔触：边缘粗糙化 + 内部颗粒 -->
+        <filter id="pencilSketch" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="5" result="rough"/>
+          <feDisplacementMap in="SourceGraphic" in2="rough" scale="1.2" xChannelSelector="R" yChannelSelector="G" result="wobble"/>
+          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="9" result="grain"/>
+          <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.08 0" result="grainTint"/>
+          <feComposite in="grainTint" in2="wobble" operator="in" result="grainMasked"/>
+          <feMerge>
+            <feMergeNode in="wobble"/>
+            <feMergeNode in="grainMasked"/>
+          </feMerge>
+        </filter>
+        <!-- 手绘偏移阴影（带轻微抖动的硬投影，模仿手绘 hatching）-->
+        <filter id="handShadow" x="-10%" y="-10%" width="120%" height="120%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="0.6" result="blur"/>
+          <feOffset in="blur" dx="2.5" dy="3" result="offsetBlur"/>
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="4" result="noise"/>
+          <feDisplacementMap in="offsetBlur" in2="noise" scale="1.4" xChannelSelector="R" yChannelSelector="G" result="wobbleShadow"/>
+          <feColorMatrix in="wobbleShadow" type="matrix" values="0 0 0 0 0.36  0 0 0 0 0.45  0 0 0 0 0.55  0 0 0 0.22 0" result="tintedShadow"/>
+          <feMerge>
+            <feMergeNode in="tintedShadow"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+    </svg>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
