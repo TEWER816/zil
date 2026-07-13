@@ -18,13 +18,13 @@ export function Button({
   className,
   disabled
 }: ButtonProps) {
-  const baseStyles = 'font-medium rounded-xl transition-all duration-300 inline-flex items-center justify-center gap-2';
+  const baseStyles = 'font-medium transition-all duration-200 inline-flex items-center justify-center gap-2 border-hand';
 
   const variants = {
-    primary: 'bg-primary text-dark-bg hover:bg-primaryLight hover:shadow-glow',
-    secondary: 'bg-white/5 text-dark-muted border border-white/10 hover:border-primary/40 hover:text-primary backdrop-blur-md',
-    ghost: 'bg-transparent text-dark-muted hover:text-primary hover:bg-primary/10',
-    danger: 'bg-red-500/90 text-white hover:bg-red-600 border border-red-500/30'
+    primary: 'bg-primaryLight text-[#1f2a30] border-primary/70 radius-hand hover:bg-primary hover:-translate-x-px hover:-translate-y-px shadow-hand-sm hover:shadow-hand',
+    secondary: 'bg-dark-bg/85 text-dark-muted border-primary/35 radius-hand hover:border-primary/60 hover:text-primary hover:-translate-x-px hover:-translate-y-px shadow-hand-sm',
+    ghost: 'bg-transparent text-dark-muted hover:text-primary hover:bg-primary/10 radius-hand-sm',
+    danger: 'bg-red-500/90 text-white border-red-500/40 radius-hand hover:bg-red-600 hover:-translate-x-px hover:-translate-y-px shadow-hand-sm'
   };
 
   const sizes = {

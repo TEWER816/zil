@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { User, Moon, Sun, Quote, Save, Trash2, Sparkles, Upload, Download, CheckCircle2, AlertCircle, Palette, Image as ImageIcon, RotateCcw, Key, Eye, EyeOff, ExternalLink } from 'lucide-react';
-import { useSettingsStore, ThemeMode } from '@/store/settingsStore';
+import { User, Quote, Save, Trash2, Sparkles, Upload, Download, CheckCircle2, AlertCircle, Palette, Image as ImageIcon, RotateCcw, Key, Eye, EyeOff, ExternalLink } from 'lucide-react';
+import { useSettingsStore } from '@/store/settingsStore';
 import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
 import { ProgressRing } from '@/components/common/ProgressRing';
@@ -60,7 +60,7 @@ const primaryPresets = [
 
 export function Settings() {
   const {
-    userName, showMotivationalQuotes, theme, setUserName, setShowMotivationalQuotes, setTheme,
+    userName, showMotivationalQuotes, setUserName, setShowMotivationalQuotes,
     customPrimaryColor, setCustomPrimaryColor,
     backgroundImage, setBackgroundImage,
     bgOverlayOpacity, setBgOverlayOpacity,
@@ -317,55 +317,6 @@ export function Settings() {
               className="w-4 h-4 rounded-full bg-white absolute top-1"
             />
           </button>
-        </div>
-      </motion.section>
-
-      {/* 主题设置 */}
-      <motion.section
-        initial={{ y: 12, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.15 }}
-        className="card"
-      >
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-9 h-9 rounded-lg bg-secondary/10 border border-secondary/20 flex items-center justify-center">
-            <Moon className="w-[18px] h-[18px] text-secondary" />
-          </div>
-          <div>
-            <h3 className="font-display text-lg text-dark-muted">主题设置</h3>
-            <p className="text-xs text-dark-muted/50">选择你喜欢的界面风格</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          {([
-            { mode: 'dark' as ThemeMode, icon: Moon, label: '深色', desc: '夜间专注' },
-            { mode: 'light' as ThemeMode, icon: Sun, label: '浅色', desc: '日间清新' },
-          ]).map(({ mode, icon: Icon, label, desc }) => {
-            const isActive = theme === mode;
-            return (
-              <motion.button
-                key={mode}
-                type="button"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setTheme(mode)}
-                className={`p-4 rounded-xl border text-left transition-colors ${
-                  isActive
-                    ? 'border-primary/40 bg-primary/5'
-                    : 'border-white/5 bg-white/[0.02] hover:border-white/10'
-                }`}
-              >
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-2 ${
-                  isActive ? 'bg-primary/15' : 'bg-white/5'
-                }`}>
-                  <Icon className={`w-[18px] h-[18px] ${isActive ? 'text-primary' : 'text-dark-muted'}`} />
-                </div>
-                <p className={`text-sm font-medium ${isActive ? 'text-primary' : 'text-dark-muted'}`}>{label}</p>
-                <p className="text-xs text-dark-muted/50 mt-0.5">{desc}</p>
-              </motion.button>
-            );
-          })}
         </div>
       </motion.section>
 

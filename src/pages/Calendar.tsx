@@ -18,6 +18,7 @@ import {
 } from '@/store/scheduleStore';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
+import { LineDoodle } from '@/components/common/LineDoodle';
 
 const weekDayLabels = ['日', '一', '二', '三', '四', '五', '六'];
 const monthNames = [
@@ -258,10 +259,8 @@ export function Calendar() {
                   exit={{ opacity: 0 }}
                   className="flex flex-col items-center justify-center py-12 text-center"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center mb-3">
-                    <CalendarDays className="w-5 h-5 text-dark-muted/30" />
-                  </div>
-                  <p className="text-sm text-dark-muted/50">这一天还没有日程</p>
+                  <LineDoodle type="empty-calendar" size={110} />
+                  <p className="text-sm text-dark-muted/50 mt-2">这一天还没有日程</p>
                   <p className="text-xs text-dark-muted/40 mt-1">点击 + 新建一个吧</p>
                 </motion.div>
               ) : (

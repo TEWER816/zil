@@ -30,7 +30,11 @@ export function ProgressRing({
         filter: glow ? `drop-shadow(0 0 6px ${color}40)` : undefined,
       }}
     >
-      <svg width={size} height={size} className="-rotate-90 absolute top-0 left-0">
+      <svg
+        width={size}
+        height={size}
+        className="-rotate-90 absolute top-0 left-0"
+      >
         {/* 背景环 */}
         <circle
           cx={size / 2}

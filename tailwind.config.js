@@ -9,21 +9,19 @@ export default {
     },
     extend: {
       colors: {
-        // ============ 主题表面色 ============
-        // 深色主题：中性深灰
+        // ============ 主题表面色（纯白可爱休闲风）============
         dark: {
-          bg: "#1A1A1F",
-          surface: "#242429",
-          border: "#34343C",
-          muted: "#B8B8C2",
+          bg: "#FFFFFF",       // 纯白背景
+          surface: "#F8FAFB",  // 微灰白表面（层次感）
+          border: "#E8ECF0",   // 柔和浅灰边框
+          muted: "#5A6B7A",    // 深灰文字
         },
-        // 浅色主题：奶油米白
         light: {
-          bg: "#F7FAF7",
-          surface: "#FFFFFF",
-          border: "#D9E6E0",
-          muted: "#6B7B75",
-          text: "#4A5A52",
+          bg: "#FFFFFF",
+          surface: "#F8FAFB",
+          border: "#E8ECF0",
+          muted: "#5A6B7A",
+          text: "#3A4A5A",
         },
         // ============ 品牌色板（扁平命名，确保 @apply 兼容） ============
         // 主色：薄荷青（CSS 变量驱动，支持运行时自定义 + 透明度修饰符）

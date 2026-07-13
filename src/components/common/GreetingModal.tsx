@@ -52,16 +52,21 @@ export function GreetingModal() {
         initial={{ opacity: 0, scale: 0.92, y: 24 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
-        className="relative bg-dark-surface border border-dark-border rounded-2xl p-7 max-w-md w-full shadow-2xl"
+        className="relative bg-dark-surface border-hand border-primary/40 radius-hand-lg p-7 max-w-md w-full shadow-hand"
       >
+        {/* 手绘装饰：右上角小星星 */}
+        <svg className="corner-doodle top-2 right-2 w-8 h-8" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path d="M16 4 L17.5 8 L21.5 9 L17.5 10 L16 14 L14.5 10 L10.5 9 L14.5 8 Z" stroke="#FFC857" strokeWidth="1.4" strokeLinejoin="round" fill="rgba(255,200,87,0.15)" />
+        </svg>
+
         {/* 图标 */}
         <div className="flex justify-center mb-5">
-          <div className="w-14 h-14 rounded-2xl bg-primary/15 border border-primary/25 flex items-center justify-center">
-            <Sparkles className="w-7 h-7 text-primary" />
+          <div className="w-14 h-14 radius-hand bg-primary/15 border-hand border-primary/30 flex items-center justify-center">
+            <Sparkles className="w-7 h-7 text-primary" strokeWidth={2} />
           </div>
         </div>
 
-        <h2 className="font-display text-2xl text-center text-dark-muted font-bold mb-2">
+        <h2 className="font-display text-3xl text-center text-dark-muted font-bold mb-2 underline-hand inline-block mx-auto" style={{ display: 'block' }}>
           该如何称呼你？
         </h2>
         <p className="text-sm text-dark-muted/60 text-center mb-6 leading-relaxed">
@@ -83,14 +88,14 @@ export function GreetingModal() {
           <button
             type="button"
             onClick={handleSkip}
-            className="flex-1 py-2.5 rounded-xl border border-dark-border text-dark-muted/70 hover:text-dark-muted hover:bg-white/5 transition-colors text-sm"
+            className="flex-1 py-2.5 radius-hand border-hand border-primary/35 text-dark-muted/70 hover:text-dark-muted hover:bg-primary/8 hover:-translate-x-px hover:-translate-y-px shadow-hand-sm transition-all text-sm"
           >
             稍后再说
           </button>
           <button
             type="button"
             onClick={handleSave}
-            className="flex-1 py-2.5 rounded-xl bg-primary text-dark-bg font-medium hover:opacity-90 transition-opacity text-sm"
+            className="flex-1 py-2.5 radius-hand bg-primaryLight border-hand border-primary/70 text-[#1f2a30] font-medium hover:bg-primary hover:-translate-x-px hover:-translate-y-px shadow-hand-sm hover:shadow-hand transition-all text-sm"
           >
             开始使用
           </button>

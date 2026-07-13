@@ -17,7 +17,7 @@ export function getLocalState(): SyncState {
     focusSessions: focusStore.sessions,
     settings: {
       userName: settingsStore.userName,
-      theme: settingsStore.theme,
+      theme: 'light',
       showMotivationalQuotes: settingsStore.showMotivationalQuotes,
       focusDuration: focusStore.focusDuration,
       breakDuration: focusStore.breakDuration,
@@ -44,7 +44,6 @@ export function applyRemoteState(state: SyncState) {
   // 设置 store
   useSettingsStore.setState({
     userName: state.settings.userName,
-    theme: state.settings.theme,
     showMotivationalQuotes: state.settings.showMotivationalQuotes,
   });
 }

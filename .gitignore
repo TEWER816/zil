@@ -27,13 +27,18 @@ dist-ssr
 
 # Build outputs and distribution
 /demo
+/demo (2)
 /release
 /release2
+/release3
 /build
 /output
+/dist (2)
 /zil web
 /zil-demo
 /zil-intro
+/zil1.0
+/web demo
 
 # IDE and share packages
 .trae

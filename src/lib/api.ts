@@ -180,7 +180,7 @@ export async function fetchSyncState(): Promise<SyncState> {
     focusSessions: data.focusSessions.map(mapFocusFromBackend),
     settings: {
       userName: data.settings.userName,
-      theme: data.settings.theme === 'light' ? 'light' : 'dark',
+      theme: 'light',
       showMotivationalQuotes: !!data.settings.showMotivationalQuotes,
       focusDuration: data.settings.focusDuration,
       breakDuration: data.settings.breakDuration,

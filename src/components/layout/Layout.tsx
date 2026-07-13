@@ -77,14 +77,19 @@ export function Layout() {
       )}
 
       {/* 全局背景氛围（专注模式或有自定义背景时隐藏） */}
-      {!focusMode && !backgroundImage && <div className="aurora-bg" />}
+      {!focusMode && !backgroundImage && (
+        <>
+          <div className="aurora-bg" />
+          <div className="aurora-bg-extra" />
+        </>
+      )}
 
       {/* 侧边栏在专注模式下隐藏 */}
       <AnimatePresence>
         {!focusMode && <Sidebar />}
       </AnimatePresence>
 
-      <main className={`min-h-screen pb-24 md:pb-0 relative z-10 transition-all duration-300 ${focusMode ? '' : 'md:ml-64'}`}>
+      <main className={`min-h-screen pb-24 md:pb-0 relative z-10 transition-all duration-300 ${focusMode ? '' : 'md:ml-[252px]'}`}>
         <div className={`mx-auto ${focusMode ? 'p-4 md:p-6 max-w-3xl' : 'p-4 md:p-10 max-w-5xl'}`}>
           {/* 移动端 Logo（专注模式下隐藏） */}
           {!focusMode && (
@@ -94,10 +99,10 @@ export function Layout() {
               transition={{ duration: 0.4 }}
               className="md:hidden flex items-center justify-center gap-2 mb-6 pt-2"
             >
-              <div className="w-8 h-8 rounded-lg bg-primary/15 border border-primary/25 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-primary" />
+              <div className="w-8 h-8 radius-hand-sm bg-primary/15 border-hand border-primary/30 flex items-center justify-center filter-hand">
+                <Sparkles className="w-4 h-4 text-primary" strokeWidth={2.2} />
               </div>
-              <h1 className="font-display text-xl text-gradient-amber font-bold tracking-tight">Zil Desktop</h1>
+              <h1 className="font-display text-2xl text-gradient-amber font-bold tracking-tight">Zil Desktop</h1>
             </motion.div>
           )}
           <Outlet />

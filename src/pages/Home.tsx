@@ -6,9 +6,12 @@ import { useHabitStore, getLocalDateString } from '@/store/habitStore';
 import { useFocusStore } from '@/store/focusStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useUIStore } from '@/store/uiStore';
+import { useMoodStore, moodConfig } from '@/store/moodStore';
 import { HabitCard } from '@/components/habits/HabitCard';
 import { HabitForm } from '@/components/habits/HabitForm';
 import { ProgressRing } from '@/components/common/ProgressRing';
+import { MoodCheckIn } from '@/components/common/MoodCheckIn';
+import { LineDoodle } from '@/components/common/LineDoodle';
 import { predictQuote, recordQuoteShow, recordQuoteFeedback } from '@/lib/predictor';
 import { rankHabits } from '@/lib/habitRanker';
 import { buildUserContext } from '@/lib/intelligence';
@@ -36,6 +39,7 @@ export function Home() {
   const sessions = useFocusStore((s) => s.sessions);
   const { userName, showMotivationalQuotes, homeProgressImage } = useSettingsStore();
   const { enterFocusMode } = useUIStore();
+  const todayMood = useMoodStore((s) => s.getTodayMood());
   const navigate = useNavigate();
   const [feedbackKey, setFeedbackKey] = useState(0);
 
@@ -102,6 +106,9 @@ export function Home() {
       transition={{ duration: 0.4 }}
       className="space-y-6 md:space-y-8"
     >
+      {/* 心情打卡弹窗 */}
+      <MoodCheckIn />
+
       {/* Hero 今日概览 */}
       <section className="card">
         <div className="flex items-center justify-between gap-6">
@@ -128,12 +135,12 @@ export function Home() {
               <button
                 type="button"
                 onClick={handleStartDiscipline}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-dark-bg font-medium text-sm shadow-lg shadow-primary/20 transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                className="inline-flex items-center gap-2 px-5 py-2.5 radius-hand bg-primaryLight border-hand border-primary/70 text-[#1f2a30] font-medium text-sm shadow-hand-sm hover:bg-primary hover:-translate-x-px hover:-translate-y-px hover:shadow-hand transition-all"
               >
-                <Maximize2 className="w-4 h-4" />
+                <Maximize2 className="w-4 h-4" strokeWidth={2.2} />
                 开始自律
               </button>
-              <p className="text-xs text-dark-muted/40 mt-2">
+              <p className="text-xs text-dark-muted/40 mt-2 italic">
                 小提示：按 F11 / ESC 可退出全屏模式
               </p>
             </div>
@@ -145,7 +152,7 @@ export function Home() {
                   initial={{ opacity: 0, y: 8, scale: 0.96 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -4 }}
-                  className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-secondary/10 border border-secondary/30 text-secondary text-sm"
+                  className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 radius-hand-sm bg-secondary/10 border-hand border-secondary/30 text-secondary text-sm"
                 >
                   <PartyPopper className="w-4 h-4" />
                   <span>今日习惯全部完成，太棒了！</span>
@@ -155,26 +162,43 @@ export function Home() {
 
             {/* 统计胶囊 */}
             <div className="flex flex-wrap gap-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/10 border border-secondary/20">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 radius-hand-sm bg-secondary/10 border-hand border-secondary/25">
                 <Flame className="w-3.5 h-3.5 text-secondary" />
                 <span className="text-xs text-secondary font-medium">
                   连续 <span className="font-bold">{totalStreak}</span> 天
                 </span>
               </div>
 
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 radius-hand-sm bg-primary/10 border-hand border-primary/25 filter-hand">
                 <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
                 <span className="text-xs text-primary font-medium">
                   已完成 <span className="font-bold">{completedCount}</span> / {activeHabits.length}
                 </span>
               </div>
 
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 radius-hand-sm bg-primary/10 border-hand border-primary/25">
                 <TrendingUp className="w-3.5 h-3.5 text-primary" />
                 <span className="text-xs text-primary font-medium">
                   进度 <span className="font-bold">{Math.round(progress)}</span>%
                 </span>
               </div>
+
+              {/* 今日心情 */}
+              {todayMood && (
+                <div
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 radius-hand-sm border-hand"
+                  style={{
+                    backgroundColor: `${moodConfig[todayMood].color}15`,
+                    borderColor: `${moodConfig[todayMood].color}40`,
+                  }}
+                  title={`今日心情：${moodConfig[todayMood].label}`}
+                >
+                  <span className="text-sm font-mono leading-none">{moodConfig[todayMood].emoji}</span>
+                  <span className="text-xs font-medium" style={{ color: moodConfig[todayMood].color }}>
+                    {moodConfig[todayMood].label}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -210,7 +234,7 @@ export function Home() {
       <section>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-baseline gap-2.5">
-            <h3 className="text-lg md:text-xl font-display font-semibold text-dark-muted">今日习惯</h3>
+            <h3 className="text-xl md:text-2xl font-display font-semibold text-dark-muted underline-hand">今日习惯</h3>
             <span className="text-xs text-dark-muted/50">{activeHabits.length} 项</span>
           </div>
           <HabitForm />
@@ -218,19 +242,17 @@ export function Home() {
 
         {activeHabits.length === 0 ? (
           <div className="card text-center py-12">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 mb-4">
-              <Sparkles className="w-7 h-7 text-primary/70" />
-            </div>
-            <h4 className="text-lg font-display font-medium text-dark-muted mb-1">从这里开始</h4>
+            <LineDoodle type="empty-habits" size={140} />
+            <h4 className="text-xl font-display font-medium text-dark-muted mb-1 mt-2">从这里开始</h4>
             <p className="text-sm text-dark-muted/60 mb-5 max-w-xs mx-auto">
               培养一个习惯最好的时间是现在。写下你想坚持的第一件事。
             </p>
             <HabitForm>
               <button
                 type="button"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-dark-bg font-medium text-sm hover:bg-primaryLight transition-colors shadow-lg shadow-primary/15"
+                className="inline-flex items-center gap-2 px-5 py-2.5 radius-hand bg-primaryLight border-hand border-primary/70 text-[#1f2a30] font-medium text-sm hover:bg-primary transition-colors shadow-hand-sm"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4" strokeWidth={2.4} />
                 添加第一个习惯
               </button>
             </HabitForm>
@@ -247,7 +269,7 @@ export function Home() {
                   className="relative"
                 >
                   {isRecommended && !isCompleted && (
-                    <div className="absolute -top-2 left-3 z-10 px-2 py-0.5 rounded-full bg-primary text-dark-bg text-[10px] font-medium tracking-wider shadow-lg">
+                    <div className="absolute -top-2 left-3 z-10 px-2 py-0.5 radius-hand-sm bg-primary border-hand border-primary/70 text-dark-bg text-[10px] font-medium tracking-wider shadow-hand-sm">
                       建议优先
                     </div>
                   )}
@@ -277,7 +299,7 @@ export function Home() {
             <button
               type="button"
               onClick={() => handleFeedback(true)}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/5 hover:bg-primary/10 text-dark-muted/50 hover:text-primary transition-colors text-[11px]"
+              className="inline-flex items-center gap-1 px-2 py-0.5 radius-hand-sm bg-white/5 hover:bg-primary/10 text-dark-muted/50 hover:text-primary transition-colors text-[11px] border-hand border-primary/15 hover:border-primary/40"
               title="这条有用，多推荐类似的"
             >
               <ThumbsUp className="w-3 h-3" />
@@ -286,7 +308,7 @@ export function Home() {
             <button
               type="button"
               onClick={() => handleFeedback(false)}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/5 hover:bg-red-500/10 text-dark-muted/50 hover:text-red-400 transition-colors text-[11px]"
+              className="inline-flex items-center gap-1 px-2 py-0.5 radius-hand-sm bg-white/5 hover:bg-red-500/10 text-dark-muted/50 hover:text-red-400 transition-colors text-[11px] border-hand border-primary/15 hover:border-red-400/40"
               title="这条没用，少推荐"
             >
               <ThumbsDown className="w-3 h-3" />

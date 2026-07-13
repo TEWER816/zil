@@ -1,10 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type ThemeMode = 'dark' | 'light';
-
 interface SettingsState {
-  theme: ThemeMode;
   showMotivationalQuotes: boolean;
   userName: string;
   hasGreeted: boolean;
@@ -24,7 +21,6 @@ interface SettingsState {
   // AI：智谱 GLM API Key（空字符串表示未配置）
   glmApiKey: string;
 
-  setTheme: (theme: ThemeMode) => void;
   setShowMotivationalQuotes: (show: boolean) => void;
   setUserName: (name: string) => void;
   setHasGreeted: (v: boolean) => void;
@@ -40,21 +36,19 @@ interface SettingsState {
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
-      theme: 'dark',
       showMotivationalQuotes: true,
       userName: '',
       hasGreeted: false,
-      focusBgColor: '#1A1A1F',
+      focusBgColor: '#FFFFFF',
 
       customPrimaryColor: null,
       backgroundImage: null,
-      bgOverlayOpacity: 70,
+      bgOverlayOpacity: 80,
       bgBlur: 0,
       homeProgressImage: null,
 
       glmApiKey: '',
 
-      setTheme: (theme) => set({ theme }),
       setShowMotivationalQuotes: (show) => set({ showMotivationalQuotes: show }),
       setUserName: (name) => set({ userName: name }),
       setHasGreeted: (v) => set({ hasGreeted: v }),

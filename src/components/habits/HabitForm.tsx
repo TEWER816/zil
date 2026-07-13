@@ -64,18 +64,18 @@ export function HabitForm({ children }: HabitFormProps) {
     <>
       {/* 添加按钮：支持自定义触发器 */}
       {children ? (
-        <button type="button" onClick={() => setIsOpen(true)} className="contents">
+        <div onClick={() => setIsOpen(true)} className="contents cursor-pointer" role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsOpen(true); } }}>
           {children}
-        </button>
+        </div>
       ) : (
         <motion.button
           type="button"
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-dark-bg font-medium text-sm hover:bg-primaryLight transition-colors shadow-lg shadow-primary/15"
+          className="flex items-center gap-2 px-4 py-2.5 radius-hand bg-primaryLight border-hand border-primary/70 text-[#1f2a30] font-medium text-sm hover:bg-primary transition-colors shadow-hand-sm"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-4 h-4" strokeWidth={2.4} />
           <span>添加习惯</span>
         </motion.button>
       )}
@@ -112,13 +112,13 @@ export function HabitForm({ children }: HabitFormProps) {
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setSelectedIcon(icon)}
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center border ${
+                    className={`w-10 h-10 radius-hand-sm flex items-center justify-center border-hand transition-colors ${
                       selectedIcon === icon
-                        ? 'border-primary bg-primary/20'
-                        : 'border-dark-border bg-dark-surface'
+                        ? 'border-primary bg-primary/20 text-primary'
+                        : 'border-primary/25 bg-dark-surface text-dark-muted'
                     }`}
                   >
-                    <IconComponent className={`w-5 h-5 ${selectedIcon === icon ? 'text-primary' : 'text-dark-muted'}`} />
+                    <IconComponent className="w-5 h-5" />
                   </motion.button>
                 );
               })}
@@ -136,8 +136,8 @@ export function HabitForm({ children }: HabitFormProps) {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedColor(color)}
-                  className={`w-8 h-8 rounded-full border-2 ${
-                    selectedColor === color ? 'border-white' : 'border-transparent'
+                  className={`w-8 h-8 radius-hand-sm border-hand ${
+                    selectedColor === color ? 'border-dark-muted/80' : 'border-transparent'
                   }`}
                   style={{ backgroundColor: color }}
                 />
@@ -156,10 +156,10 @@ export function HabitForm({ children }: HabitFormProps) {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setFrequency(f)}
-                  className={`px-4 py-2 rounded-lg text-sm ${
+                  className={`px-4 py-2 radius-hand-sm text-sm border-hand transition-colors ${
                     frequency === f
-                      ? 'bg-primary text-dark-bg'
-                      : 'bg-dark-surface text-dark-muted border border-dark-border'
+                      ? 'bg-primaryLight border-primary/70 text-[#1f2a30] shadow-hand-sm'
+                      : 'bg-dark-surface text-dark-muted border-primary/25'
                   }`}
                 >
                   {f === 'daily' ? '每日' : f === 'weekly' ? '每周' : '自定义'}

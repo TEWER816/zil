@@ -1,31 +1,59 @@
 import { NavLink } from 'react-router-dom';
 import { Home, List, Timer, HeartPulse, CalendarDays, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useSettingsStore } from '@/store/settingsStore';
+import { useHabitStore, getLocalDateString } from '@/store/habitStore';
+import { useCompanionStore } from '@/store/companionStore';
+import { ZiliCat } from '@/components/companion/ZiliCat';
 
-const navItems = [
-  { path: '/', icon: Home, label: '首页' },
-  { path: '/habits', icon: List, label: '习惯' },
-  { path: '/focus', icon: Timer, label: '专注' },
-  { path: '/presets', icon: HeartPulse, label: '预设' },
-  { path: '/calendar', icon: CalendarDays, label: '日程' },
-  { path: '/settings', icon: Settings, label: '设置' },
+const navGroups = [
+  {
+    label: '主要',
+    items: [
+      { path: '/', icon: Home, label: '首页' },
+      { path: '/habits', icon: List, label: '习惯' },
+      { path: '/calendar', icon: CalendarDays, label: '日程' },
+    ],
+  },
+  {
+    label: '工具',
+    items: [
+      { path: '/focus', icon: Timer, label: '专注' },
+      { path: '/presets', icon: HeartPulse, label: '预设' },
+      { path: '/settings', icon: Settings, label: '设置' },
+    ],
+  },
 ];
 
+const allItems = navGroups.flatMap((g) => g.items);
+
 export function Sidebar() {
+  const userName = useSettingsStore((s) => s.userName);
+  const { habits, logs } = useHabitStore();
+  const pulseKey = useCompanionStore((s) => s.pulseKey);
+
+  // 今日完成率（驱动小猫表情）
+  const today = getLocalDateString();
+  const activeHabits = habits.filter((h) => h.isActive);
+  const completedToday = activeHabits.filter((h) =>
+    logs.find((l) => l.habitId === h.id && l.date === today && l.completed)
+  ).length;
+  const progress = activeHabits.length > 0 ? (completedToday / activeHabits.length) * 100 : 0;
+
   return (
     <>
-      {/* 桌面端侧边栏 - 现代极简 */}
+      {/* 桌面端：浮动玻璃侧栏 */}
       <motion.aside
-        initial={{ x: -16, opacity: 0 }}
+        initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        exit={{ x: -16, opacity: 0 }}
-        transition={{ duration: 0.35, ease: 'easeInOut' }}
-        className="sidebar-aside hidden md:flex fixed left-0 top-0 h-full w-60 border-r border-white/5 flex-col z-20"
+        exit={{ x: -20, opacity: 0 }}
+        transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
+        className="sidebar-aside hidden md:flex fixed left-3 top-3 bottom-3 w-60 flex-col z-20 radius-hand-lg bg-dark-bg/70 backdrop-blur-xl shadow-hand border-hand border-primary/25 overflow-hidden"
       >
-        {/* Logo 区 - 极简品牌标识 */}
-        <div className="px-6 pt-7 pb-6">
+        {/* 顶部 Logo 区 */}
+        <div className="px-5 pt-6 pb-5">
           <div className="flex items-center gap-2.5">
-            <div className="relative w-8 h-8 rounded-lg bg-primary/10 border border-primary/25 flex items-center justify-center shrink-0 text-primary">
+            <div className="relative w-9 h-9 radius-hand bg-primary/12 border-hand border-primary/30 flex items-center justify-center shrink-0 text-primary filter-hand">
               <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
                 <path
                   d="M16 6.5c-1.5 2.5-4 4-4 7.5 0 3.5 2.5 6.5 6 8.5 3.5-2 6-5 6-8.5 0-3.5-2.5-5-4-7.5"
@@ -43,78 +71,136 @@ export function Sidebar() {
                 />
               </svg>
             </div>
-            <h1 className="font-display text-lg text-dark-muted font-semibold tracking-tight leading-none">
-              Zil
-            </h1>
+            <div className="leading-none">
+              <h1 className="font-display text-2xl text-dark-muted font-semibold tracking-tight">
+                Zil
+              </h1>
+              <p className="text-[11px] text-dark-muted/40 mt-0.5 tracking-wide">自律助手</p>
+            </div>
           </div>
         </div>
 
-        {/* 导航菜单 - 现代极简，左侧色条指示器 */}
-        <nav className="flex-1 px-3 pt-2">
-          <p className="px-3 pb-2 text-[11px] font-medium text-dark-muted/40 tracking-wider uppercase">菜单</p>
-          <div className="space-y-0.5">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  `nav-item ${isActive ? 'active' : ''}`
-                }
-              >
-                {({ isActive }) => (
-                  <div className="flex items-center gap-3 w-full relative">
-                    {/* 左侧色条指示器 - 极简现代 */}
-                    {isActive && (
-                      <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-full bg-primary" />
+        {/* 导航菜单 - 分组 + 动画指示器 */}
+        <nav className="flex-1 px-3 space-y-4 overflow-y-auto">
+          {navGroups.map((group) => (
+            <div key={group.label}>
+              <p className="px-3 pb-1.5 text-[11px] font-medium text-dark-muted/40 tracking-wider uppercase">
+                {group.label}
+              </p>
+              <div className="space-y-0.5">
+                {group.items.map((item) => (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className="block"
+                  >
+                    {({ isActive }) => (
+                      <div className="relative">
+                        {/* 活跃背景 - layoutId 动画 */}
+                        {isActive && (
+                          <motion.div
+                            layoutId="nav-active-bg"
+                            className="absolute inset-0 radius-hand-sm bg-primary/14 border-hand border-primary/35 shadow-hand-sm filter-hand"
+                            transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                          />
+                        )}
+                        <div
+                          className={`relative flex items-center gap-3 px-3 py-2.5 radius-hand-sm transition-colors ${
+                            isActive
+                              ? 'text-primary'
+                              : 'text-dark-muted/60 hover:text-dark-muted hover:bg-white/4'
+                          }`}
+                        >
+                          <item.icon
+                            className="w-[18px] h-[18px] shrink-0"
+                            strokeWidth={isActive ? 2.3 : 1.75}
+                          />
+                          <span className={`text-sm tracking-tight ${isActive ? 'font-semibold' : 'font-medium'}`}>
+                            {item.label}
+                          </span>
+                        </div>
+                      </div>
                     )}
-                    <item.icon
-                      className={`w-[18px] h-[18px] shrink-0 transition-colors ${isActive ? 'text-primary' : 'text-dark-muted/60'}`}
-                      strokeWidth={isActive ? 2.25 : 1.75}
-                    />
-                    <span className={`tracking-tight ${isActive ? 'font-semibold' : 'font-medium'}`}>{item.label}</span>
-                  </div>
-                )}
-              </NavLink>
-            ))}
-          </div>
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+          ))}
         </nav>
+
+        {/* 底部用户区 */}
+        <div className="px-3 pb-3 pt-2 border-t border-primary/15">
+          {/* Zili 小猫伙伴 */}
+          <div className="flex justify-center pb-3 pt-1">
+            <ZiliCat
+              progress={progress}
+              hasHabits={activeHabits.length > 0}
+              pulseKey={pulseKey}
+              size={56}
+            />
+          </div>
+          <NavLink
+            to="/settings"
+            className="block"
+          >
+            {({ isActive }) => (
+              <div className="flex items-center gap-3 px-3 py-2.5 radius-hand-sm transition-colors hover:bg-white/4">
+                <div className="w-8 h-8 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0 text-primary text-xs font-semibold">
+                  {(userName || 'Z')[0].toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0 leading-tight">
+                  <p className="text-sm text-dark-muted font-medium truncate">
+                    {userName || '未设置昵称'}
+                  </p>
+                  <p className={`text-[10px] ${isActive ? 'text-primary' : 'text-dark-muted/40'}`}>
+                    {isActive ? '正在设置' : '点击设置'}
+                  </p>
+                </div>
+              </div>
+            )}
+          </NavLink>
+        </div>
       </motion.aside>
 
-      {/* 移动端底部导航 - 液态玻璃现代风 */}
+      {/* 移动端：底部浮动玻璃导航 */}
       <motion.nav
-        initial={{ y: 20, opacity: 0 }}
+        initial={{ y: 24, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 20, opacity: 0 }}
-        transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="md:hidden fixed bottom-0 left-0 right-0 z-30 px-4 pb-4 safe-area-pb pointer-events-none"
+        exit={{ y: 24, opacity: 0 }}
+        transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+        className="md:hidden fixed bottom-3 left-3 right-3 z-30 safe-area-pb pointer-events-none"
       >
-        <div className="pointer-events-auto rounded-2xl border border-white/15 backdrop-blur-xl bg-dark-bg/85 shadow-xl">
-          <div className="flex items-center justify-around px-2 py-2">
-            {navItems.map((item) => (
+        <div className="pointer-events-auto radius-hand-lg backdrop-blur-xl bg-dark-bg/80 shadow-hand border-hand border-primary/25">
+          <div className="flex items-center justify-around px-1.5 py-1.5">
+            {allItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
-                className={({ isActive }) =>
-                  `relative flex flex-col items-center gap-1 px-4 py-1.5 rounded-xl transition-colors duration-200 ${
-                    isActive
-                      ? 'text-primary'
-                      : 'text-dark-muted hover:text-dark-muted'
-                  }`
-                }
+                className="relative"
               >
                 {({ isActive }) => (
                   <motion.div
                     whileTap={{ scale: 0.85 }}
-                    className="flex flex-col items-center gap-1 relative"
+                    className="relative flex flex-col items-center gap-0.5 px-3 py-1.5 radius-hand-sm"
                   >
                     {isActive && (
                       <motion.div
                         layoutId="mobile-nav-bg"
-                        className="absolute inset-0 -m-1 rounded-xl bg-primary/12"
+                        className="absolute inset-0 radius-hand-sm bg-primary/14 border-hand border-primary/35 shadow-hand-sm filter-hand"
+                        transition={{ type: 'spring', stiffness: 400, damping: 32 }}
                       />
                     )}
-                    <item.icon className="w-5 h-5 relative z-10" strokeWidth={isActive ? 2.4 : 2} />
-                    <span className={`text-[11px] relative z-10 ${isActive ? 'font-semibold' : 'font-medium'}`}>{item.label}</span>
+                    <item.icon
+                      className="w-[18px] h-[18px] relative z-10"
+                      strokeWidth={isActive ? 2.4 : 1.8}
+                      style={{ color: isActive ? 'var(--color-primary)' : 'rgba(90,107,122,0.65)' }}
+                    />
+                    <span
+                      className={`text-[10px] relative z-10 ${isActive ? 'font-semibold' : 'font-medium'}`}
+                      style={{ color: isActive ? 'var(--color-primary)' : 'rgba(90,107,122,0.65)' }}
+                    >
+                      {item.label}
+                    </span>
                   </motion.div>
                 )}
               </NavLink>

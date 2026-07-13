@@ -7,10 +7,8 @@ import { Presets } from "@/pages/Presets";
 import { Calendar } from "@/pages/Calendar";
 import { Settings } from "@/pages/Settings";
 import { GreetingModal } from "@/components/common/GreetingModal";
-import { useTheme } from "@/hooks/useTheme";
 
 export default function App() {
-  useTheme();
   return (
     <Router>
       <GreetingModal />
